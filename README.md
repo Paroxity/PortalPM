@@ -1,5 +1,5 @@
 # PortalPM
-A PocketMine-MP plugin implementation of the [Portal](https://github.com/Paroxity/portal) TCP socket API.g
+A PocketMine-MP plugin implementation of the [Portal](https://github.com/Paroxity/portal) TCP socket API.
 
 ## Usage
 1. Make sure you already have [Portal](https://github.com/Paroxity/portal) set up
