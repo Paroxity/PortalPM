@@ -89,16 +89,18 @@ class SocketThread extends Thread
 
             do {
                 $read = socket_read($socket, 4);
-                if (strlen($read) === 4) {
-                    $length = Binary::readLInt($read);
-                    $read = socket_read($socket, $length);
-                    if ($read !== false) {
-                        $this->receiveBuffer[] = $read;
-                        $this->notifier->wakeupSleeper();
+                if($read !== false) {
+                    if (strlen($read) === 4) {
+                        $length = Binary::readLInt($read);
+                        $read = socket_read($socket, $length);
+                        if ($read !== false) {
+                            $this->receiveBuffer[] = $read;
+                            $this->notifier->wakeupSleeper();
+                        }
+                    } elseif ($read === "") {
+                        socket_close($socket);
+                        $socket = $this->connectToSocketServer();
                     }
-                } elseif ($read === 0) {
-                    socket_close($socket);
-                    $socket = $this->connectToSocketServer();
                 }
             } while ($read !== false);
             usleep(25000);
