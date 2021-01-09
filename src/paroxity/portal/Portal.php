@@ -37,7 +37,7 @@ class Portal extends PluginBase
 
         $name = $config->getNested("server.name", "Name");
         $group = $config->getNested("server.group", "Hub");
-        $address = (($ip = Internet::getIP()) ? $ip : "127.0.0.1") . ":" . $this->getServer()->getPort();
+        $address = ($host === "127.0.0.1" ? "127.0.0.1" : Internet::getIP()) . ":" . $this->getServer()->getPort();
 
         $notifier = new SleeperNotifier();
         $this->thread = $thread = new SocketThread($host, $port, $secret, $name, $group, $address, $notifier);
@@ -56,6 +56,11 @@ class Portal extends PluginBase
         PacketPool::registerPacket(new AuthResponsePacket());
 
         $this->getServer()->getPluginManager()->registerEvents(new EventListener(), $this);
+    }
+
+    public function onDisable(): void
+    {
+        $this->thread->quit();
     }
 
     public static function getInstance(): Portal

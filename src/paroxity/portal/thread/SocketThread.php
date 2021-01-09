@@ -15,7 +15,9 @@ use function sleep;
 use function socket_close;
 use function socket_connect;
 use function socket_create;
+use function socket_last_error;
 use function socket_read;
+use function socket_set_nonblock;
 use function socket_write;
 use function strlen;
 use function usleep;
@@ -80,8 +82,8 @@ class SocketThread extends Thread
         while ($this->isRunning) {
             while (($send = $this->sendQueue->shift()) !== null) {
                 $length = strlen($send);
-                $wrote = socket_write($socket, Binary::writeLInt($length) . $send, 4 + $length);
-                if ($wrote === 0) {
+                $wrote = @socket_write($socket, Binary::writeLInt($length) . $send, 4 + $length);
+                if ($wrote !== 4 + $length) {
                     socket_close($socket);
                     $socket = $this->connectToSocketServer();
                 }
@@ -89,10 +91,14 @@ class SocketThread extends Thread
 
             do {
                 $read = socket_read($socket, 4);
+                if(!$read && socket_last_error($socket) === 10054) {
+                    socket_close($socket);
+                    $socket = $this->connectToSocketServer();
+                }
                 if($read !== false) {
                     if (strlen($read) === 4) {
                         $length = Binary::readLInt($read);
-                        $read = socket_read($socket, $length);
+                        $read = @socket_read($socket, $length);
                         if ($read !== false) {
                             $this->receiveBuffer[] = $read;
                             $this->notifier->wakeupSleeper();
@@ -116,15 +122,16 @@ class SocketThread extends Thread
     public function connectToSocketServer()
     {
         do {
-            $socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
+            $socket = @socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
         } while (!$socket);
 
         do {
-            $connected = socket_connect($socket, $this->host, $this->port);
+            $connected = @socket_connect($socket, $this->host, $this->port);
             if (!$connected) {
                 sleep(10);
             }
         } while (!$connected);
+        socket_set_nonblock($socket);
 
         $extraData = Binary::writeUnsignedVarInt(strlen($this->group)) . $this->group . Binary::writeUnsignedVarInt(strlen($this->address)) . $this->address;
         $pk = AuthRequestPacket::create(AuthRequestPacket::CLIENT_TYPE_SERVER, $this->secret, $this->name, $extraData);
