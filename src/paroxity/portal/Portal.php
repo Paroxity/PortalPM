@@ -4,12 +4,17 @@ declare(strict_types=1);
 
 namespace paroxity\portal;
 
+use Closure;
 use paroxity\portal\packet\AuthRequestPacket;
 use paroxity\portal\packet\AuthResponsePacket;
 use paroxity\portal\packet\Packet;
+use paroxity\portal\packet\TransferRequestPacket;
+use paroxity\portal\packet\TransferResponsePacket;
 use paroxity\portal\thread\SocketThread;
 use pocketmine\network\mcpe\protocol\PacketPool;
+use pocketmine\Player;
 use pocketmine\plugin\PluginBase;
+use pocketmine\Server;
 use pocketmine\snooze\SleeperNotifier;
 use pocketmine\utils\Internet;
 
@@ -21,6 +26,9 @@ class Portal extends PluginBase
     /** @var SocketThread */
     private $thread;
 
+    /** @var Closure[] */
+    private $transferring = [];
+
     public function onLoad(): void
     {
         self::$instance = $this;
@@ -31,7 +39,7 @@ class Portal extends PluginBase
         $config = $this->getConfig();
 
         $host = $config->get("proxy-address", "127.0.0.1");
-        $port = (int) $config->getNested("socket.port", 19131);
+        $port = (int)$config->getNested("socket.port", 19131);
 
         $secret = $config->getNested("socket.secret", "");
 
@@ -66,5 +74,29 @@ class Portal extends PluginBase
     public static function getInstance(): Portal
     {
         return self::$instance;
+    }
+
+    public function transferPlayer(Player $player, string $group, string $server, Closure $onResponse): void
+    {
+        $this->transferring[$player->getId()] = $onResponse;
+        $this->thread->addPacketToQueue(TransferRequestPacket::create($player->getId(), $group, $server));
+    }
+
+    /**
+     * @internal
+     */
+    public function handleTransferResponse(TransferResponsePacket $packet): void
+    {
+        $closure = $this->transferring[$packet->getPlayerEntityRuntimeId()] ?? null;
+        if ($closure !== null) {
+            unset($this->transferring[$packet->getPlayerEntityRuntimeId()]);
+            foreach (Server::getInstance()->getLevels() as $level) {
+                $player = $level->getEntity($packet->getPlayerEntityRuntimeId());
+                if ($player instanceof Player) {
+                    $closure($player, $packet->status, $packet->reason);
+                    return;
+                }
+            }
+        }
     }
 }
