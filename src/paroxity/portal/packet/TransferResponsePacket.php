@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace paroxity\portal\packet;
 
 use paroxity\portal\Portal;
+use pocketmine\utils\UUID;
 
 class TransferResponsePacket extends Packet
 {
@@ -16,25 +17,26 @@ class TransferResponsePacket extends Packet
     public const RESPONSE_PLAYER_NOT_FOUND = 4;
     public const RESPONSE_ERROR = 5;
 
-    /** @var int */
-    public $playerEntityRuntimeId;
+    /** @var UUID */
+    public $playerUUID;
     /** @var int */
     public $status;
     /** @var string */
-    public $reason;
+    public $error;
 
-    public static function create(int $playerEntityRuntimeId, string $group, string $server): self
+    public static function create(UUID $playerUUID, int $status, string $error): self
     {
         $result = new self;
-        $result->playerEntityRuntimeId = $playerEntityRuntimeId;
-        $result->group = $group;
-        $result->server = $server;
+        $result->playerUUID = $playerUUID;
+        $result->status = $status;
+        $result->error = $error;
+
         return $result;
     }
 
-    public function getPlayerEntityRuntimeId(): int
+    public function getPlayerUUID(): UUID
     {
-        return $this->playerEntityRuntimeId;
+        return $this->playerUUID;
     }
 
     public function getStatus(): int
@@ -42,23 +44,23 @@ class TransferResponsePacket extends Packet
         return $this->status;
     }
 
-    public function getReason(): string
+    public function getError(): string
     {
-        return $this->reason;
+        return $this->error;
     }
 
     protected function decodePayload(): void
     {
-        $this->playerEntityRuntimeId = $this->getEntityRuntimeId();
+        $this->playerUUID = $this->getUUID();
         $this->status = $this->getByte();
-        $this->reason = $this->getString();
+        $this->error = $this->getString();
     }
 
     protected function encodePayload(): void
     {
-        $this->putEntityRuntimeId($this->playerEntityRuntimeId);
+        $this->putUUID($this->playerUUID);
         $this->putByte($this->status);
-        $this->putString($this->reason);
+        $this->putString($this->error);
     }
 
     public function handlePacket(): void

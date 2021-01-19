@@ -18,14 +18,11 @@ class AuthResponsePacket extends Packet
 
     /** @var int */
     public $status;
-    /** @var string */
-    public $reason;
 
-    public static function create(int $status, string $reason): self
+    public static function create(int $status): self
     {
         $result = new self;
         $result->status = $status;
-        $result->reason = $reason;
         return $result;
     }
 
@@ -34,28 +31,33 @@ class AuthResponsePacket extends Packet
         return $this->status;
     }
 
-    public function getReason(): string
-    {
-        return $this->reason;
-    }
-
     protected function decodePayload(): void
     {
         $this->status = $this->getByte();
-        $this->reason = $this->getString();
     }
 
     protected function encodePayload(): void
     {
         $this->putByte($this->status);
-        $this->putString($this->reason);
     }
 
     public function handlePacket(): void
     {
         if ($this->status !== self::RESPONSE_SUCCESS) {
-            throw new PortalAuthException($this->reason);
+            $reason = "";
+            switch ($this->status) {
+                case self::RESPONSE_INCORRECT_SECRET:
+                    $reason = "Incorrect secret provided";
+                    break;
+                case self::RESPONSE_UNKNOWN_TYPE:
+                    $reason = "Unknown client type provided";
+                    break;
+                case self::RESPONSE_INVALID_DATA:
+                    $reason = "Invalid/incorrect extra data";
+                    break;
+            }
+            throw new PortalAuthException($reason);
         }
-        Portal::getInstance()->getLogger()->info($this->reason);
+        Portal::getInstance()->getLogger()->info("Authenticated with socket server");
     }
 }

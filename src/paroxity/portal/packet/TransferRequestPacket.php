@@ -3,29 +3,31 @@ declare(strict_types=1);
 
 namespace paroxity\portal\packet;
 
+use pocketmine\utils\UUID;
+
 class TransferRequestPacket extends Packet
 {
     public const NETWORK_ID = ProtocolInfo::TRANSFER_REQUEST_PACKET;
 
-    /** @var int */
-    public $playerEntityRuntimeId;
+    /** @var UUID */
+    public $playerUUID;
     /** @var string */
     public $group;
     /** @var string */
     public $server;
 
-    public static function create(int $playerEntityRuntimeId, string $group, string $server): self
+    public static function create(UUID $playerUUID, string $group, string $server): self
     {
         $result = new self;
-        $result->playerEntityRuntimeId = $playerEntityRuntimeId;
+        $result->playerUUID = $playerUUID;
         $result->group = $group;
         $result->server = $server;
         return $result;
     }
 
-    public function getPlayerEntityRuntimeId(): int
+    public function getPlayerUUID(): UUID
     {
-        return $this->playerEntityRuntimeId;
+        return $this->playerUUID;
     }
 
     public function getGroup(): string
@@ -40,14 +42,14 @@ class TransferRequestPacket extends Packet
 
     protected function decodePayload(): void
     {
-        $this->playerEntityRuntimeId = $this->getEntityRuntimeId();
+        $this->playerUUID = $this->getUUID();
         $this->group = $this->getString();
         $this->server = $this->getString();
     }
 
     protected function encodePayload(): void
     {
-        $this->putEntityRuntimeId($this->playerEntityRuntimeId);
+        $this->putUUID($this->playerUUID);
         $this->putString($this->group);
         $this->putString($this->server);
     }

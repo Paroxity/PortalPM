@@ -14,7 +14,6 @@ use paroxity\portal\thread\SocketThread;
 use pocketmine\network\mcpe\protocol\PacketPool;
 use pocketmine\Player;
 use pocketmine\plugin\PluginBase;
-use pocketmine\Server;
 use pocketmine\snooze\SleeperNotifier;
 use pocketmine\utils\Internet;
 
@@ -79,7 +78,7 @@ class Portal extends PluginBase
     public function transferPlayer(Player $player, string $group, string $server, Closure $onResponse): void
     {
         $this->transferring[$player->getId()] = $onResponse;
-        $this->thread->addPacketToQueue(TransferRequestPacket::create($player->getId(), $group, $server));
+        $this->thread->addPacketToQueue(TransferRequestPacket::create($player->getUniqueId(), $group, $server));
     }
 
     /**
@@ -87,15 +86,13 @@ class Portal extends PluginBase
      */
     public function handleTransferResponse(TransferResponsePacket $packet): void
     {
-        $closure = $this->transferring[$packet->getPlayerEntityRuntimeId()] ?? null;
+        $closure = $this->transferring[$packet->getPlayerUUID()->toBinary()] ?? null;
         if ($closure !== null) {
-            unset($this->transferring[$packet->getPlayerEntityRuntimeId()]);
-            foreach (Server::getInstance()->getLevels() as $level) {
-                $player = $level->getEntity($packet->getPlayerEntityRuntimeId());
-                if ($player instanceof Player) {
-                    $closure($player, $packet->status, $packet->reason);
-                    return;
-                }
+            unset($this->transferring[$packet->getPlayerUUID()->toBinary()]);
+            $player = $this->getServer()->getPlayerByUUID($packet->getPlayerUUID());
+            if ($player instanceof Player) {
+                $closure($player, $packet->status, $packet->error);
+                return;
             }
         }
     }
