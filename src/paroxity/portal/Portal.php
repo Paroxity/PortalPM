@@ -16,6 +16,7 @@ use pocketmine\Player;
 use pocketmine\plugin\PluginBase;
 use pocketmine\snooze\SleeperNotifier;
 use pocketmine\utils\Internet;
+use pocketmine\utils\UUID;
 
 class Portal extends PluginBase
 {
@@ -78,7 +79,9 @@ class Portal extends PluginBase
     public function transferPlayer(Player $player, string $group, string $server, Closure $onResponse): void
     {
         $this->transferring[$player->getId()] = $onResponse;
-        $this->thread->addPacketToQueue(TransferRequestPacket::create($player->getUniqueId(), $group, $server));
+        /** @var UUID $uuid */
+        $uuid = $player->getUniqueId();
+        $this->thread->addPacketToQueue(TransferRequestPacket::create($uuid, $group, $server));
     }
 
     /**
