@@ -22,9 +22,9 @@ class TransferResponsePacket extends Packet
     /** @var int */
     public $status;
     /** @var string */
-    public $error;
+    public $error = "";
 
-    public static function create(UUID $playerUUID, int $status, string $error): self
+    public static function create(UUID $playerUUID, int $status, string $error = ""): self
     {
         $result = new self;
         $result->playerUUID = $playerUUID;
@@ -53,14 +53,18 @@ class TransferResponsePacket extends Packet
     {
         $this->playerUUID = $this->getUUID();
         $this->status = $this->getByte();
-        $this->error = $this->getString();
+        if($this->status === self::RESPONSE_ERROR){
+            $this->error = $this->getString();
+        }
     }
 
     protected function encodePayload(): void
     {
         $this->putUUID($this->playerUUID);
         $this->putByte($this->status);
-        $this->putString($this->error);
+        if($this->status === self::RESPONSE_ERROR){
+            $this->putString($this->error);
+        }
     }
 
     public function handlePacket(): void
