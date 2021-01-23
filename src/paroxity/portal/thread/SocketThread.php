@@ -8,7 +8,7 @@ use Exception;
 use paroxity\portal\packet\AuthRequestPacket;
 use pocketmine\network\mcpe\protocol\DataPacket;
 use pocketmine\snooze\SleeperNotifier;
-use pocketmine\Thread;
+use pocketmine\thread\Thread;
 use pocketmine\utils\Binary;
 use Threaded;
 use function sleep;
@@ -73,7 +73,7 @@ class SocketThread extends Thread
         $this->start();
     }
 
-    public function run(): void
+    public function onRun(): void
     {
         $this->registerClassLoader();
 
@@ -155,7 +155,7 @@ class SocketThread extends Thread
     public function addPacketToQueue(DataPacket $packet): void
     {
         $packet->encode();
-        $this->sendQueue[] = $packet->getBuffer();
+        $this->sendQueue[] = $packet->getSerializer()->getBuffer();
     }
 
     public function getBuffer(): ?string

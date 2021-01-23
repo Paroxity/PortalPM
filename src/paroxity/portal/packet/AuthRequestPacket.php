@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace paroxity\portal\packet;
 
+use pocketmine\network\mcpe\protocol\serializer\PacketSerializer;
+
 class AuthRequestPacket extends Packet
 {
     public const NETWORK_ID = ProtocolInfo::AUTH_REQUEST_PACKET;
@@ -49,20 +51,20 @@ class AuthRequestPacket extends Packet
         return $this->extraData;
     }
 
-    protected function decodePayload(): void
+    protected function decodePayload(PacketSerializer $in): void
     {
-        $this->type = $this->getByte();
-        $this->secret = $this->getString();
-        $this->name = $this->getString();
-        $this->extraData = $this->getRemaining();
+        $this->type = $in->getByte();
+        $this->secret = $in->getString();
+        $this->name = $in->getString();
+        $this->extraData = $in->getRemaining();
     }
 
-    protected function encodePayload(): void
+    protected function encodePayload(PacketSerializer $out): void
     {
-        $this->putByte($this->type);
-        $this->putString($this->secret);
-        $this->putString($this->name);
-        $this->put($this->extraData);
+        $out->putByte($this->type);
+        $out->putString($this->secret);
+        $out->putString($this->name);
+        $out->put($this->extraData);
     }
 
     public function handlePacket(): void

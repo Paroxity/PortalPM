@@ -3,7 +3,8 @@ declare(strict_types=1);
 
 namespace paroxity\portal\packet;
 
-use pocketmine\utils\UUID;
+use pocketmine\network\mcpe\protocol\serializer\PacketSerializer;
+use pocketmine\uuid\UUID;
 
 class TransferRequestPacket extends Packet
 {
@@ -40,18 +41,18 @@ class TransferRequestPacket extends Packet
         return $this->server;
     }
 
-    protected function decodePayload(): void
+    protected function decodePayload(PacketSerializer $in): void
     {
-        $this->playerUUID = $this->getUUID();
-        $this->group = $this->getString();
-        $this->server = $this->getString();
+        $this->playerUUID = $in->getUUID();
+        $this->group = $in->getString();
+        $this->server = $in->getString();
     }
 
-    protected function encodePayload(): void
+    protected function encodePayload(PacketSerializer $out): void
     {
-        $this->putUUID($this->playerUUID);
-        $this->putString($this->group);
-        $this->putString($this->server);
+        $out->putUUID($this->playerUUID);
+        $out->putString($this->group);
+        $out->putString($this->server);
     }
 
     public function handlePacket(): void

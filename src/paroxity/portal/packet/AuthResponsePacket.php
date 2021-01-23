@@ -6,6 +6,7 @@ namespace paroxity\portal\packet;
 
 use paroxity\portal\exception\PortalAuthException;
 use paroxity\portal\Portal;
+use pocketmine\network\mcpe\protocol\serializer\PacketSerializer;
 
 class AuthResponsePacket extends Packet
 {
@@ -31,14 +32,14 @@ class AuthResponsePacket extends Packet
         return $this->status;
     }
 
-    protected function decodePayload(): void
+    protected function decodePayload(PacketSerializer $in): void
     {
-        $this->status = $this->getByte();
+        $this->status = $in->getByte();
     }
 
-    protected function encodePayload(): void
+    protected function encodePayload(PacketSerializer $out): void
     {
-        $this->putByte($this->status);
+        $out->putByte($this->status);
     }
 
     public function handlePacket(): void

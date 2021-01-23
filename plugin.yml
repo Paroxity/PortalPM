@@ -1,6 +1,6 @@
 name: Portal
 main: paroxity\portal\Portal
-api: 3.0.0
+api: 4.0.0
 author: ParoxityTeam
 description: "Portal API implementation for PocketMine-MP"
 version: 1.0.0

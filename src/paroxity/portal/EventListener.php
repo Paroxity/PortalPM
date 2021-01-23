@@ -13,10 +13,8 @@ class EventListener implements Listener
 
     public function onPlayerPreLogin(PlayerPreLoginEvent $event): void
     {
-        $player = $event->getPlayer();
-        if (!preg_match("/^(127|172)/", $player->getAddress())) {
-            $event->setKickMessage("You must join via the proxy");
-            $event->setCancelled();
+        if (!preg_match("/^(127|172)/", $event->getIp())) {
+            $event->setKickReason(PlayerPreLoginEvent::KICK_REASON_PLUGIN, "You must join via the proxy");
         }
     }
 }

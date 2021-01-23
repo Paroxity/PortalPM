@@ -12,11 +12,10 @@ use paroxity\portal\packet\TransferRequestPacket;
 use paroxity\portal\packet\TransferResponsePacket;
 use paroxity\portal\thread\SocketThread;
 use pocketmine\network\mcpe\protocol\PacketPool;
-use pocketmine\Player;
+use pocketmine\player\Player;
 use pocketmine\plugin\PluginBase;
 use pocketmine\snooze\SleeperNotifier;
 use pocketmine\utils\Internet;
-use pocketmine\utils\UUID;
 
 class Portal extends PluginBase
 {
@@ -48,11 +47,11 @@ class Portal extends PluginBase
         $address = ($host === "127.0.0.1" ? "127.0.0.1" : Internet::getIP()) . ":" . $this->getServer()->getPort();
 
         $notifier = new SleeperNotifier();
-        $this->thread = $thread = new SocketThread($host, $port, $secret, $name, $group, $address, $notifier);
 
-        $this->getServer()->getTickSleeper()->addNotifier($notifier, static function () use ($thread) {
-            while (($buffer = $thread->getBuffer()) !== null) {
-                $packet = PacketPool::getPacket($buffer);
+        $pool = PacketPool::getInstance();
+        $this->getServer()->getTickSleeper()->addNotifier($notifier, function () use ($pool) {
+            while (($buffer = $this->thread->getBuffer()) !== null) {
+                $packet = $pool->getPacket($buffer);
                 if ($packet instanceof Packet) {
                     $packet->decode();
                     $packet->handlePacket();
@@ -60,8 +59,10 @@ class Portal extends PluginBase
             }
         });
 
-        PacketPool::registerPacket(new AuthRequestPacket());
-        PacketPool::registerPacket(new AuthResponsePacket());
+        $this->thread = new SocketThread($host, $port, $secret, $name, $group, $address, $notifier);
+
+        $pool->registerPacket(new AuthRequestPacket());
+        $pool->registerPacket(new AuthResponsePacket());
 
         $this->getServer()->getPluginManager()->registerEvents(new EventListener(), $this);
     }
@@ -79,9 +80,7 @@ class Portal extends PluginBase
     public function transferPlayer(Player $player, string $group, string $server, Closure $onResponse): void
     {
         $this->transferring[$player->getId()] = $onResponse;
-        /** @var UUID $uuid */
-        $uuid = $player->getUniqueId();
-        $this->thread->addPacketToQueue(TransferRequestPacket::create($uuid, $group, $server));
+        $this->thread->addPacketToQueue(TransferRequestPacket::create($player->getUniqueId(), $group, $server));
     }
 
     /**

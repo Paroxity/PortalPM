@@ -4,7 +4,8 @@ declare(strict_types=1);
 namespace paroxity\portal\packet;
 
 use paroxity\portal\Portal;
-use pocketmine\utils\UUID;
+use pocketmine\network\mcpe\protocol\serializer\PacketSerializer;
+use pocketmine\uuid\UUID;
 
 class TransferResponsePacket extends Packet
 {
@@ -49,21 +50,21 @@ class TransferResponsePacket extends Packet
         return $this->error;
     }
 
-    protected function decodePayload(): void
+    protected function decodePayload(PacketSerializer $in): void
     {
-        $this->playerUUID = $this->getUUID();
-        $this->status = $this->getByte();
+        $this->playerUUID = $in->getUUID();
+        $this->status = $in->getByte();
         if($this->status === self::RESPONSE_ERROR){
-            $this->error = $this->getString();
+            $this->error = $in->getString();
         }
     }
 
-    protected function encodePayload(): void
+    protected function encodePayload(PacketSerializer $out): void
     {
-        $this->putUUID($this->playerUUID);
-        $this->putByte($this->status);
+        $out->putUUID($this->playerUUID);
+        $out->putByte($this->status);
         if($this->status === self::RESPONSE_ERROR){
-            $this->putString($this->error);
+            $out->putString($this->error);
         }
     }
 
