@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace paroxity\portal;
 
 use Closure;
-use paroxity\portal\packet\AuthRequestPacket;
-use paroxity\portal\packet\AuthResponsePacket;
 use paroxity\portal\packet\Packet;
+use paroxity\portal\packet\PacketPool;
+use paroxity\portal\packet\PlayerInfoRequestPacket;
+use paroxity\portal\packet\PlayerInfoResponsePacket;
 use paroxity\portal\packet\TransferRequestPacket;
 use paroxity\portal\packet\TransferResponsePacket;
 use paroxity\portal\thread\SocketThread;
-use pocketmine\network\mcpe\protocol\PacketPool;
 use pocketmine\Player;
 use pocketmine\plugin\PluginBase;
 use pocketmine\snooze\SleeperNotifier;
@@ -28,6 +28,9 @@ class Portal extends PluginBase
 
     /** @var Closure[] */
     private $transferring = [];
+
+    /** @var Closure[] */
+    private $playerInfoRequests = [];
 
     public function onLoad(): void
     {
@@ -47,6 +50,8 @@ class Portal extends PluginBase
         $group = $config->getNested("server.group", "Hub");
         $address = ($host === "127.0.0.1" ? "127.0.0.1" : Internet::getIP()) . ":" . $this->getServer()->getPort();
 
+        PacketPool::init();
+
         $notifier = new SleeperNotifier();
         $this->thread = $thread = new SocketThread($host, $port, $secret, $name, $group, $address, $notifier);
 
@@ -59,11 +64,6 @@ class Portal extends PluginBase
                 }
             }
         });
-
-        PacketPool::registerPacket(new AuthRequestPacket());
-        PacketPool::registerPacket(new AuthResponsePacket());
-
-        $this->getServer()->getPluginManager()->registerEvents(new EventListener(), $this);
     }
 
     public function onDisable(): void
@@ -78,7 +78,9 @@ class Portal extends PluginBase
 
     public function transferPlayer(Player $player, string $group, string $server, Closure $onResponse): void
     {
-        $this->transferring[$player->getId()] = $onResponse;
+        if ($onResponse !== null) {
+            $this->transferring[$player->getRawUniqueId()] = $onResponse;
+        }
         /** @var UUID $uuid */
         $uuid = $player->getUniqueId();
         $this->thread->addPacketToQueue(TransferRequestPacket::create($uuid, $group, $server));
@@ -95,6 +97,28 @@ class Portal extends PluginBase
             $player = $this->getServer()->getPlayerByUUID($packet->getPlayerUUID());
             if ($player instanceof Player) {
                 $closure($player, $packet->status, $packet->error);
+                return;
+            }
+        }
+    }
+
+    public function requestPlayerInfo(Player $player, Closure $onResponse): void
+    {
+        if ($onResponse !== null) {
+            $this->playerInfoRequests[$player->getRawUniqueId()] = $onResponse;
+        }
+
+        $this->thread->addPacketToQueue(PlayerInfoRequestPacket::create($player->getUniqueId()));
+    }
+
+    public function handlePlayerInfoResponse(PlayerInfoResponsePacket $packet)
+    {
+        $closure = $this->playerInfoRequests[$packet->getPlayerUUID()->toBinary()] ?? null;
+        if ($closure !== null) {
+            unset($this->playerInfoRequests[$packet->getPlayerUUID()->toBinary()]);
+            $player = $this->getServer()->getPlayerByUUID($packet->getPlayerUUID());
+            if ($player instanceof Player) {
+                $closure($player, $packet->status, $packet->xuid, $packet->address);
                 return;
             }
         }

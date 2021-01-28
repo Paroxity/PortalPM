@@ -6,7 +6,7 @@ namespace paroxity\portal\thread;
 
 use Exception;
 use paroxity\portal\packet\AuthRequestPacket;
-use pocketmine\network\mcpe\protocol\DataPacket;
+use paroxity\portal\packet\Packet;
 use pocketmine\snooze\SleeperNotifier;
 use pocketmine\Thread;
 use pocketmine\utils\Binary;
@@ -152,7 +152,7 @@ class SocketThread extends Thread
         parent::quit();
     }
 
-    public function addPacketToQueue(DataPacket $packet): void
+    public function addPacketToQueue(Packet $packet): void
     {
         $packet->encode();
         $this->sendQueue[] = $packet->getBuffer();
