@@ -97,7 +97,6 @@ class Portal extends PluginBase
             $player = $this->getServer()->getPlayerByUUID($packet->getPlayerUUID());
             if ($player instanceof Player) {
                 $closure($player, $packet->status, $packet->error);
-                return;
             }
         }
     }
@@ -108,7 +107,9 @@ class Portal extends PluginBase
             $this->playerInfoRequests[$player->getRawUniqueId()] = $onResponse;
         }
 
-        $this->thread->addPacketToQueue(PlayerInfoRequestPacket::create($player->getUniqueId()));
+        /** @var UUID $uuid */
+        $uuid = $player->getUniqueId();
+        $this->thread->addPacketToQueue(PlayerInfoRequestPacket::create($uuid));
     }
 
     public function handlePlayerInfoResponse(PlayerInfoResponsePacket $packet)
@@ -119,7 +120,6 @@ class Portal extends PluginBase
             $player = $this->getServer()->getPlayerByUUID($packet->getPlayerUUID());
             if ($player instanceof Player) {
                 $closure($player, $packet->status, $packet->xuid, $packet->address);
-                return;
             }
         }
     }

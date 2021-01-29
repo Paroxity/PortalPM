@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace paroxity\portal\packet;
 
 use pocketmine\network\mcpe\NetworkBinaryStream;
-use pocketmine\utils\Utils;
 
 abstract class Packet extends NetworkBinaryStream
 {
@@ -71,25 +70,6 @@ abstract class Packet extends NetworkBinaryStream
         $this->isEncoded = false;
         $this->offset = 0;
         return $this;
-    }
-
-    /**
-     * @return mixed[]
-     */
-    public function __debugInfo()
-    {
-        $data = [];
-        foreach ((array)$this as $k => $v) {
-            if ($k === "buffer" and is_string($v)) {
-                $data[$k] = bin2hex($v);
-            } elseif (is_string($v) or (is_object($v) and method_exists($v, "__toString"))) {
-                $data[$k] = Utils::printable((string)$v);
-            } else {
-                $data[$k] = $v;
-            }
-        }
-
-        return $data;
     }
 
     /**

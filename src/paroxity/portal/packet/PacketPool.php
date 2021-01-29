@@ -11,7 +11,7 @@ class PacketPool
 {
     protected static $pool = [];
 
-    public static function init()
+    public static function init(): void
     {
         static::registerPacket(new AuthRequestPacket());
         static::registerPacket(new AuthResponsePacket());
@@ -21,14 +21,14 @@ class PacketPool
         static::registerPacket(new PlayerInfoResponsePacket());
     }
 
-    public static function registerPacket(Packet $packet)
+    public static function registerPacket(Packet $packet): void
     {
         static::$pool[$packet->pid()] = clone $packet;
     }
 
-    public static function getPacketById(int $pid): ?Packet
+    public static function getPacketById(int $pid): Packet
     {
-        return isset(static::$pool[$pid]) ? clone static::$pool[$pid] : null;
+        return isset(static::$pool[$pid]) ? clone static::$pool[$pid] : new UnknownPacket();
     }
 
     /**
@@ -36,9 +36,8 @@ class PacketPool
      */
     public static function getPacket(string $buffer): Packet
     {
-        $offset = 0;
-        $pk = static::getPacketById(Binary::readLShort($buffer, $offset));
-        $pk->setBuffer($buffer, $offset);
+        $pk = static::getPacketById(Binary::readLShort($buffer));
+        $pk->setBuffer($buffer, 2);
 
         return $pk;
     }
