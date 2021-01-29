@@ -76,6 +76,11 @@ class Portal extends PluginBase
         return self::$instance;
     }
 
+    public function getThread(): SocketThread
+    {
+        return $this->thread;
+    }
+
     public function transferPlayer(Player $player, string $group, string $server, Closure $onResponse): void
     {
         if ($onResponse !== null) {
