@@ -112,7 +112,7 @@ class Portal extends PluginBase
         $this->thread->addPacketToQueue(PlayerInfoRequestPacket::create($uuid));
     }
 
-    public function handlePlayerInfoResponse(PlayerInfoResponsePacket $packet)
+    public function handlePlayerInfoResponse(PlayerInfoResponsePacket $packet): void
     {
         $closure = $this->playerInfoRequests[$packet->getPlayerUUID()->toBinary()] ?? null;
         if ($closure !== null) {
