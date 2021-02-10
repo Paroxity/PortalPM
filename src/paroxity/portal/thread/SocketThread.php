@@ -86,6 +86,9 @@ class SocketThread extends Thread
                 if ($wrote !== 4 + $length) {
                     socket_close($socket);
                     $socket = $this->connectToSocketServer();
+                    if($socket === null){
+                        break;
+                    }
                 }
             }
 
@@ -94,6 +97,9 @@ class SocketThread extends Thread
                 if(!$read && socket_last_error($socket) === 10054) {
                     socket_close($socket);
                     $socket = $this->connectToSocketServer();
+                    if($socket === null){
+                        break;
+                    }
                 }
                 if($read !== false) {
                     if (strlen($read) === 4) {
@@ -106,13 +112,18 @@ class SocketThread extends Thread
                     } elseif ($read === "") {
                         socket_close($socket);
                         $socket = $this->connectToSocketServer();
+                        if($socket === null){
+                            break;
+                        }
                     }
                 }
             } while ($read !== false);
             usleep(25000);
         }
 
-        socket_close($socket);
+        if($socket !== null){
+            socket_close($socket);
+        }
     }
 
     /**
@@ -122,13 +133,19 @@ class SocketThread extends Thread
     public function connectToSocketServer()
     {
         do {
+            if(!$this->isRunning){
+                return null;
+            }
             $socket = @socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
         } while (!$socket);
 
         do {
+            if(!$this->isRunning){
+                return null;
+            }
             $connected = @socket_connect($socket, $this->host, $this->port);
             if (!$connected) {
-                sleep(10);
+                sleep(5);
             }
         } while (!$connected);
         socket_set_nonblock($socket);
