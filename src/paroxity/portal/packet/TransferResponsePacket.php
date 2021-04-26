@@ -5,7 +5,7 @@ namespace paroxity\portal\packet;
 
 use paroxity\portal\Portal;
 use pocketmine\network\mcpe\protocol\serializer\PacketSerializer;
-use pocketmine\uuid\UUID;
+use Ramsey\Uuid\UuidInterface;
 
 class TransferResponsePacket extends Packet
 {
@@ -18,14 +18,14 @@ class TransferResponsePacket extends Packet
     public const RESPONSE_PLAYER_NOT_FOUND = 4;
     public const RESPONSE_ERROR = 5;
 
-    /** @var UUID */
+    /** @var UuidInterface */
     public $playerUUID;
     /** @var int */
     public $status;
     /** @var string */
     public $error = "";
 
-    public static function create(UUID $playerUUID, int $status, string $error = ""): self
+    public static function create(UuidInterface $playerUUID, int $status, string $error = ""): self
     {
         $result = new self;
         $result->playerUUID = $playerUUID;
@@ -35,7 +35,7 @@ class TransferResponsePacket extends Packet
         return $result;
     }
 
-    public function getPlayerUUID(): UUID
+    public function getPlayerUUID(): UuidInterface
     {
         return $this->playerUUID;
     }

@@ -93,9 +93,9 @@ class Portal extends PluginBase
      */
     public function handleTransferResponse(TransferResponsePacket $packet): void
     {
-        $closure = $this->transferring[$packet->getPlayerUUID()->toBinary()] ?? null;
+        $closure = $this->transferring[$packet->getPlayerUUID()->getBytes()] ?? null;
         if ($closure !== null) {
-            unset($this->transferring[$packet->getPlayerUUID()->toBinary()]);
+            unset($this->transferring[$packet->getPlayerUUID()->getBytes()]);
             $player = $this->getServer()->getPlayerByUUID($packet->getPlayerUUID());
             if ($player instanceof Player) {
                 $closure($player, $packet->status, $packet->error);
@@ -106,7 +106,7 @@ class Portal extends PluginBase
     public function requestPlayerInfo(Player $player, Closure $onResponse): void
     {
         if ($onResponse !== null) {
-            $this->playerInfoRequests[$player->getUniqueId()->toBinary()] = $onResponse;
+            $this->playerInfoRequests[$player->getUniqueId()->getBytes()] = $onResponse;
         }
 
         $this->thread->addPacketToQueue(PlayerInfoRequestPacket::create($player->getUniqueId()));
@@ -115,17 +115,16 @@ class Portal extends PluginBase
     /**
      * @internal
      */
-    public function handlePlayerInfoResponse(PlayerInfoResponsePacket $packet)
+    public function handlePlayerInfoResponse(PlayerInfoResponsePacket $packet): void
     {
-        $closure = $this->playerInfoRequests[$packet->getPlayerUUID()->toBinary()] ?? null;
+        $closure = $this->playerInfoRequests[$packet->getPlayerUUID()->getBytes()] ?? null;
         if ($closure !== null) {
-            unset($this->playerInfoRequests[$packet->getPlayerUUID()->toBinary()]);
+            unset($this->playerInfoRequests[$packet->getPlayerUUID()->getBytes()]);
             $player = $this->getServer()->getPlayerByUUID($packet->getPlayerUUID());
             if ($player instanceof Player) {
                 $closure($player, $packet->status, $packet->xuid, $packet->address);
             }
         }
-
     }
 
 }

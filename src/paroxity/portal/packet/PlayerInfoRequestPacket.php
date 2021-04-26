@@ -4,17 +4,17 @@ declare(strict_types=1);
 namespace paroxity\portal\packet;
 
 use pocketmine\network\mcpe\protocol\serializer\PacketSerializer;
-use pocketmine\uuid\UUID;
+use Ramsey\Uuid\UuidInterface;
 
 class PlayerInfoRequestPacket extends Packet
 {
 
     public const NETWORK_ID = ProtocolInfo::PLAYER_INFO_REQUEST_PACKET;
 
-    /** @var UUID */
+    /** @var UuidInterface */
     public $playerUUID;
 
-    public static function create(UUID $playerUUID): self
+    public static function create(UuidInterface $playerUUID): self
     {
         $result = new self;
         $result->playerUUID = $playerUUID;
