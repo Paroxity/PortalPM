@@ -20,6 +20,11 @@ class PacketPool
         static::registerPacket(new TransferResponsePacket());
         static::registerPacket(new PlayerInfoRequestPacket());
         static::registerPacket(new PlayerInfoResponsePacket());
+        static::registerPacket(new ServerListRequestPacket());
+        static::registerPacket(new ServerListResponsePacket());
+        static::registerPacket(new FindPlayerRequestPacket());
+        static::registerPacket(new FindPlayerResponsePacket());
+        static::registerPacket(new UpdatePlayerLatencyPacket());
     }
 
     public static function registerPacket(Packet $packet): void
