@@ -12,14 +12,10 @@ class AuthRequestPacket extends Packet
 
     public const CLIENT_TYPE_SERVER = 0;
 
-    /** @var int */
-    public $type;
-    /** @var string */
-    public $secret;
-    /** @var string */
-    public $name;
-    /** @var string */
-    public $extraData;
+    public int $type;
+    public string $secret;
+    public string $name;
+    public string $extraData;
 
     public static function create(int $type, string $secret, string $name, string $extraData): self
     {

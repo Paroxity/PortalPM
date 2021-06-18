@@ -11,10 +11,8 @@ abstract class Packet
 
     public const NETWORK_ID = 0;
 
-    /** @var bool */
-    public $isEncoded = false;
-    /** @var PacketSerializer */
-    private $serializer;
+    public bool $isEncoded = false;
+    private PacketSerializer $serializer;
 
     public function __construct()
     {
