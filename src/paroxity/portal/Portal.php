@@ -162,7 +162,7 @@ class Portal extends PluginBase implements Listener
     public function requestServerList(?Closure $onResponse): void
     {
         if ($onResponse !== null) {
-            $this->playerInfoRequests[] = $onResponse;
+            $this->serverListRequests[] = $onResponse;
         }
 
         // There is no point in sending multiple of the packets to the proxy at the same time, so we only
