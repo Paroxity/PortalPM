@@ -17,12 +17,9 @@ class TransferResponsePacket extends Packet
     public const RESPONSE_PLAYER_NOT_FOUND = 4;
     public const RESPONSE_ERROR = 5;
 
-    /** @var UUID */
-    public $playerUUID;
-    /** @var int */
-    public $status;
-    /** @var string */
-    public $error = "";
+    public UUID $playerUUID;
+    public int $status;
+    public string $error = "";
 
     public static function create(UUID $playerUUID, int $status, string $error = ""): self
     {

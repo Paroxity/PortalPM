@@ -10,14 +10,10 @@ class PlayerInfoResponsePacket extends Packet
 {
     public const NETWORK_ID = ProtocolInfo::PLAYER_INFO_RESPONSE_PACKET;
 
-    /** @var UUID */
-    public $playerUUID;
-    /** @var int */
-    public $status;
-    /** @var string */
-    public $xuid;
-    /** @var string */
-    public $address;
+    public UUID $playerUUID;
+    public int $status;
+    public string $xuid;
+    public string $address;
 
     public static function create(UUID $playerUUID, int $status, string $xuid, string $address): self
     {

@@ -10,8 +10,7 @@ class PlayerInfoRequestPacket extends Packet
 
     public const NETWORK_ID = ProtocolInfo::PLAYER_INFO_REQUEST_PACKET;
 
-    /** @var UUID */
-    public $playerUUID;
+    public UUID $playerUUID;
 
     public static function create(UUID $playerUUID): self
     {

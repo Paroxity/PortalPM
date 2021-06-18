@@ -16,8 +16,7 @@ class AuthResponsePacket extends Packet
     public const RESPONSE_UNKNOWN_TYPE = 2;
     public const RESPONSE_INVALID_DATA = 3;
 
-    /** @var int */
-    public $status;
+    public int $status;
 
     public static function create(int $status): self
     {

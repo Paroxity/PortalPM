@@ -20,15 +20,12 @@ use pocketmine\utils\UUID;
 
 class Portal extends PluginBase
 {
-    /** @var self */
-    private static $instance;
+    private static self $instance;
 
-    /** @var SocketThread */
-    private $thread;
+    private SocketThread $thread;
 
     /** @var Closure[] */
     private $transferring = [];
-
     /** @var Closure[] */
     private $playerInfoRequests = [];
 

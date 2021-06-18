@@ -28,30 +28,20 @@ use const SOL_TCP;
 
 class SocketThread extends Thread
 {
-    /** @var string */
-    private $host;
-    /** @var int */
-    private $port;
+    private string $host;
+    private int $port;
 
-    /** @var string */
-    private $secret;
-    /** @var string */
-    private $name;
-    /** @var string */
-    private $group;
-    /** @var string */
-    private $address;
+    private string $secret;
+    private string $name;
+    private string $group;
+    private string $address;
 
-    /** @var Threaded */
-    private $sendQueue;
-    /** @var Threaded */
-    private $receiveBuffer;
+    private Threaded $sendQueue;
+    private Threaded $receiveBuffer;
 
-    /** @var SleeperNotifier */
-    private $notifier;
+    private SleeperNotifier $notifier;
 
-    /** @var bool */
-    private $isRunning;
+    private bool $isRunning;
 
     public function __construct(string $host, int $port, string $secret, string $name, string $group, string $address, SleeperNotifier $notifier)
     {

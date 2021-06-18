@@ -11,8 +11,7 @@ abstract class Packet extends NetworkBinaryStream
 
     public const NETWORK_ID = 0;
 
-    /** @var bool */
-    public $isEncoded = false;
+    public bool $isEncoded = false;
 
     public function pid(): int
     {

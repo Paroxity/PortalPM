@@ -9,12 +9,9 @@ class TransferRequestPacket extends Packet
 {
     public const NETWORK_ID = ProtocolInfo::TRANSFER_REQUEST_PACKET;
 
-    /** @var UUID */
-    public $playerUUID;
-    /** @var string */
-    public $group;
-    /** @var string */
-    public $server;
+    public UUID $playerUUID;
+    public string $group;
+    public string $server;
 
     public static function create(UUID $playerUUID, string $group, string $server): self
     {
