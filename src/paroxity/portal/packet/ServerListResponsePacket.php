@@ -27,24 +27,24 @@ class ServerListResponsePacket extends Packet
 
     public function decodePayload(): void
     {
-        for($i = 0, $count = $this->getUnsignedVarInt(); $i < $count; ++$i) {
+        for($i = 0, $count = $this->getLInt(); $i < $count; ++$i) {
             $this->servers[$i] = ServerListEntry::create(
                 $this->getString(),
                 $this->getString(),
                 $this->getBool(),
-                $this->getLInt(),
+                $this->getVarLong(),
             );
         }
     }
 
     public function encodePayload(): void
     {
-        $this->putUnsignedVarInt(count($this->servers));
+        $this->putLInt(count($this->servers));
         foreach($this->servers as $server){
             $this->putString($server->getName());
             $this->putString($server->getGroup());
             $this->putBool($server->isOnline());
-            $this->putLInt($server->getPlayerCount());
+            $this->putVarLong($server->getPlayerCount());
         }
     }
 
