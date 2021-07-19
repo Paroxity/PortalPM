@@ -31,6 +31,6 @@ class UnknownPacket extends Packet
 
     public function handlePacket(): void
     {
-
+    	// NOOP
     }
 }

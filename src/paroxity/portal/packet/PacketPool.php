@@ -10,7 +10,7 @@ use pocketmine\utils\BinaryDataException;
 class PacketPool
 {
     /** @var Packet[] */
-    protected static $pool = [];
+    protected static array $pool = [];
 
     public static function init(): void
     {

@@ -9,7 +9,6 @@ use Ramsey\Uuid\UuidInterface;
 
 class UpdatePlayerLatencyPacket extends Packet
 {
-
     public const NETWORK_ID = ProtocolInfo::UPDATE_PLAYER_LATENCY_PACKET;
 
     public UuidInterface $playerUUID;

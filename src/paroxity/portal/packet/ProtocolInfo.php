@@ -5,7 +5,6 @@ namespace paroxity\portal\packet;
 
 class ProtocolInfo
 {
-
     public const AUTH_REQUEST_PACKET = 0x00;
     public const AUTH_RESPONSE_PACKET = 0x01;
     public const TRANSFER_REQUEST_PACKET = 0x02;

@@ -8,7 +8,6 @@ use function get_class;
 
 abstract class Packet
 {
-
     public const NETWORK_ID = 0;
 
     public bool $isEncoded = false;

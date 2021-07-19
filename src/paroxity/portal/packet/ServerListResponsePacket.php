@@ -9,11 +9,10 @@ use pocketmine\network\mcpe\protocol\serializer\PacketSerializer;
 
 class ServerListResponsePacket extends Packet
 {
-
     public const NETWORK_ID = ProtocolInfo::SERVER_LIST_RESPONSE_PACKET;
 
     /** @var ServerListEntry[] */
-    private $servers = [];
+    private array $servers = [];
 
     /**
      * @return ServerListEntry[]

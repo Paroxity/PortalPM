@@ -1,5 +1,4 @@
 <?php
-
 declare(strict_types=1);
 
 namespace paroxity\portal\thread;
@@ -76,7 +75,7 @@ class SocketThread extends Thread
                 if ($wrote !== 4 + $length) {
                     socket_close($socket);
                     $socket = $this->connectToSocketServer();
-                    if($socket === null){
+                    if($socket === null) {
                         break;
                     }
                 }
@@ -87,7 +86,7 @@ class SocketThread extends Thread
                 if(!$read && socket_last_error($socket) === 10054) {
                     socket_close($socket);
                     $socket = $this->connectToSocketServer();
-                    if($socket === null){
+                    if($socket === null) {
                         break;
                     }
                 }
@@ -102,7 +101,7 @@ class SocketThread extends Thread
                     } elseif ($read === "") {
                         socket_close($socket);
                         $socket = $this->connectToSocketServer();
-                        if($socket === null){
+                        if($socket === null) {
                             break;
                         }
                     }
@@ -111,7 +110,7 @@ class SocketThread extends Thread
             usleep(25000);
         }
 
-        if($socket !== null){
+        if($socket !== null) {
             socket_close($socket);
         }
     }
@@ -123,14 +122,14 @@ class SocketThread extends Thread
     public function connectToSocketServer()
     {
         do {
-            if(!$this->isRunning){
+            if(!$this->isRunning) {
                 return null;
             }
             $socket = @socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
         } while (!$socket);
 
         do {
-            if(!$this->isRunning){
+            if(!$this->isRunning) {
                 return null;
             }
             $connected = @socket_connect($socket, $this->host, $this->port);

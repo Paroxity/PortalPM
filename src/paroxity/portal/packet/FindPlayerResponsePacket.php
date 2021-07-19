@@ -9,7 +9,6 @@ use Ramsey\Uuid\UuidInterface;
 
 class FindPlayerResponsePacket extends Packet
 {
-
     public const NETWORK_ID = ProtocolInfo::FIND_PLAYER_RESPONSE_PACKET;
 
     public UuidInterface $playerUUID;
