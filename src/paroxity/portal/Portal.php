@@ -28,6 +28,7 @@ use pocketmine\snooze\SleeperNotifier;
 use pocketmine\utils\Internet;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
+use function strtolower;
 
 class Portal extends PluginBase implements Listener
 {
@@ -182,7 +183,7 @@ class Portal extends PluginBase implements Listener
     public function findPlayer(?UuidInterface $uuid, string $name, ?Closure $onResponse): void
     {
         if($onResponse !== null) {
-            $this->findPlayerRequests[$uuid === null ? $name : $uuid->getBytes()] = $onResponse;
+            $this->findPlayerRequests[$uuid === null ? strtolower($name) : $uuid->getBytes()] = $onResponse;
         }
 
         $this->thread->addPacketToQueue(FindPlayerRequestPacket::create($uuid ?? Uuid::fromString(Uuid::NIL), $name));
@@ -193,7 +194,7 @@ class Portal extends PluginBase implements Listener
      */
     public function handleFindPlayerResponse(FindPlayerResponsePacket $packet): void
     {
-        $closure = $this->findPlayerRequests[$packet->playerUUID->getBytes()] ?? $this->findPlayerRequests[$packet->playerName];
+        $closure = $this->findPlayerRequests[$packet->playerUUID->getBytes()] ?? $this->findPlayerRequests[strtolower($packet->playerName)];
         if($closure !== null) {
             $closure($packet->playerUUID, $packet->playerName, $packet->online, $packet->group, $packet->server);
         }
