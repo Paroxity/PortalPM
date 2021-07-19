@@ -9,3 +9,4 @@ command:
   enable: true
   commands:
     transfer: true
+    server: true

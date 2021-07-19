@@ -7,3 +7,9 @@ version: 1.0.1
 permissions:
   portal.command.transfer:
     default: op
+  portal.command.server:
+    default: op
+  portal.command.server.self:
+    default: true
+  portal.command.server.other:
+    default: op
