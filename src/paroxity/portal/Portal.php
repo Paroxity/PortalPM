@@ -196,7 +196,8 @@ class Portal extends PluginBase implements Listener
     {
         $closure = $this->findPlayerRequests[$packet->playerUUID->getBytes()] ?? $this->findPlayerRequests[strtolower($packet->playerName)];
         if($closure !== null) {
-            $closure($packet->playerUUID, $packet->playerName, $packet->online, $packet->group, $packet->server);
+        	$online = $packet->online;
+            $closure($packet->playerUUID, $packet->playerName, $online, $online ? $packet->group : "", $online ? $packet->server : "");
         }
     }
 
