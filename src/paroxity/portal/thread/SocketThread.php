@@ -6,6 +6,9 @@ namespace paroxity\portal\thread;
 use Exception;
 use paroxity\portal\packet\AuthRequestPacket;
 use paroxity\portal\packet\Packet;
+use pocketmine\network\mcpe\convert\GlobalItemTypeDictionary;
+use pocketmine\network\mcpe\protocol\serializer\PacketSerializer;
+use pocketmine\network\mcpe\protocol\serializer\PacketSerializerContext;
 use pocketmine\snooze\SleeperNotifier;
 use pocketmine\thread\Thread;
 use pocketmine\utils\Binary;
@@ -64,7 +67,7 @@ class SocketThread extends Thread
 
     public function onRun(): void
     {
-        $this->registerClassLoader();
+        $this->registerClassLoaders();
 
         $socket = $this->connectToSocketServer();
 
@@ -160,8 +163,10 @@ class SocketThread extends Thread
 
     public function addPacketToQueue(Packet $packet): void
     {
-        $packet->encode();
-        $this->sendQueue[] = $packet->getSerializer()->getBuffer();
+	    $encoderContext = new PacketSerializerContext(GlobalItemTypeDictionary::getInstance()->getDictionary());
+	    $serializer = PacketSerializer::encoder($encoderContext);
+        $packet->encode($serializer);
+	    $this->sendQueue[] = $serializer->getBuffer();
     }
 
     public function getBuffer(): ?string

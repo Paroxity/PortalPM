@@ -11,22 +11,6 @@ abstract class Packet
     public const NETWORK_ID = 0;
 
     public bool $isEncoded = false;
-    private PacketSerializer $serializer;
-
-    public function __construct()
-    {
-        $this->serializer = new PacketSerializer();
-    }
-
-    public function getSerializer(): PacketSerializer
-    {
-        return $this->serializer;
-    }
-
-    public function setSerializer(PacketSerializer $serializer): void
-    {
-        $this->serializer = $serializer;
-    }
 
     public function pid(): int
     {
@@ -38,11 +22,11 @@ abstract class Packet
         return (new \ReflectionClass($this))->getShortName();
     }
 
-    public function decode(): void
+    public function decode(PacketSerializer $in): void
     {
-        $this->serializer->rewind();
-        $this->decodeHeader($this->serializer);
-        $this->decodePayload($this->serializer);
+	    $in->rewind();
+        $this->decodeHeader($in);
+        $this->decodePayload($in);
     }
 
     protected function decodeHeader(PacketSerializer $in): void
@@ -57,11 +41,10 @@ abstract class Packet
     {
     }
 
-    public function encode(): void
+    public function encode(PacketSerializer $out): void
     {
-        $this->serializer = new PacketSerializer();
-        $this->encodeHeader($this->serializer);
-        $this->encodePayload($this->serializer);
+        $this->encodeHeader($out);
+        $this->encodePayload($out);
         $this->isEncoded = true;
     }
 
@@ -78,7 +61,6 @@ abstract class Packet
 
     public function clean(): Packet
     {
-        $this->serializer = new PacketSerializer();
         $this->isEncoded = false;
         return $this;
     }

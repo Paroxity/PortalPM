@@ -19,6 +19,9 @@ use paroxity\portal\thread\SocketThread;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerJoinEvent;
 use pocketmine\event\player\PlayerQuitEvent;
+use pocketmine\network\mcpe\convert\GlobalItemTypeDictionary;
+use pocketmine\network\mcpe\protocol\serializer\PacketSerializer;
+use pocketmine\network\mcpe\protocol\serializer\PacketSerializerContext;
 use pocketmine\player\Player;
 use pocketmine\plugin\PluginBase;
 use pocketmine\snooze\SleeperNotifier;
@@ -70,10 +73,12 @@ class Portal extends PluginBase implements Listener
         $this->thread = new SocketThread($host, $port, $secret, $name, $group, $address, $notifier);
 
         $this->getServer()->getTickSleeper()->addNotifier($notifier, function () {
+	        $context = new PacketSerializerContext(GlobalItemTypeDictionary::getInstance()->getDictionary());
             while (($buffer = $this->thread->getBuffer()) !== null) {
+	            $stream = PacketSerializer::decoder($buffer, 0, $context);
                 $packet = PacketPool::getPacket($buffer);
                 if ($packet instanceof Packet) {
-                    $packet->decode();
+                    $packet->decode($stream);
                     $packet->handlePacket();
                 }
             }

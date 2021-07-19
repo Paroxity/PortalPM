@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace paroxity\portal\packet;
 
-use pocketmine\network\mcpe\protocol\serializer\PacketSerializer;
 use pocketmine\utils\Binary;
 use pocketmine\utils\BinaryDataException;
 
@@ -42,9 +41,6 @@ class PacketPool
      */
     public static function getPacket(string $buffer): Packet
     {
-        $pk = static::getPacketById(Binary::readLShort($buffer));
-        $pk->setSerializer(new PacketSerializer($buffer));
-
-        return $pk;
+        return static::getPacketById(Binary::readLShort($buffer));
     }
 }
