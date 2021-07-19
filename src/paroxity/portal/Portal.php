@@ -70,7 +70,9 @@ class Portal extends PluginBase implements Listener
         $group = $config->getNested("server.group", "Hub");
         $address = ($host === "127.0.0.1" ? "127.0.0.1" : Internet::getIP()) . ":" . $this->getServer()->getPort();
 
-	    PacketHooker::register($this);
+        if(!PacketHooker::isRegistered()){
+	        PacketHooker::register($this);
+        }
 
 	    PacketPool::init();
         CommandMap::init($this);
