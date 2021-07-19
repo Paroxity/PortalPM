@@ -113,7 +113,7 @@ class Portal extends PluginBase implements Listener
     public function transferPlayer(Player $player, string $group, string $server, ?Closure $onResponse): void
     {
         if ($onResponse !== null) {
-            $this->transferring[$player->getId()] = $onResponse;
+            $this->transferring[$player->getUniqueId()->getBytes()] = $onResponse;
         }
         $this->thread->addPacketToQueue(TransferRequestPacket::create($player->getUniqueId(), $group, $server));
     }
@@ -199,7 +199,8 @@ class Portal extends PluginBase implements Listener
         }
     }
 
-    public function getPlayerLatency(Player $player): int{
+    public function getPlayerLatency(Player $player): int
+    {
         /** @var UUID $uuid */
         $uuid = $player->getUniqueId();
         return $this->playerLatencies[$uuid->getBytes()] ?? -1;
