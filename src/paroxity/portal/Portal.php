@@ -4,6 +4,8 @@ declare(strict_types=1);
 namespace paroxity\portal;
 
 use Closure;
+use CortexPE\Commando\PacketHooker;
+use paroxity\portal\command\CommandMap;
 use paroxity\portal\packet\FindPlayerRequestPacket;
 use paroxity\portal\packet\FindPlayerResponsePacket;
 use paroxity\portal\packet\Packet;
@@ -68,7 +70,10 @@ class Portal extends PluginBase implements Listener
         $group = $config->getNested("server.group", "Hub");
         $address = ($host === "127.0.0.1" ? "127.0.0.1" : Internet::getIP()) . ":" . $this->getServer()->getPort();
 
-        PacketPool::init();
+	    PacketHooker::register($this);
+
+	    PacketPool::init();
+        CommandMap::init($this);
 
         $notifier = new SleeperNotifier();
         $this->thread = new SocketThread($host, $port, $secret, $name, $group, $address, $notifier);
@@ -113,11 +118,16 @@ class Portal extends PluginBase implements Listener
 
     public function transferPlayer(Player $player, string $group, string $server, ?Closure $onResponse): void
     {
-        if ($onResponse !== null) {
-            $this->transferring[$player->getUniqueId()->getBytes()] = $onResponse;
-        }
-        $this->thread->addPacketToQueue(TransferRequestPacket::create($player->getUniqueId(), $group, $server));
+    	$this->transferPlayerByUUID($player->getUniqueId(), $group, $server, $onResponse);
     }
+
+	public function transferPlayerByUUID(UuidInterface $uuid, string $group, string $server, ?Closure $onResponse): void
+	{
+		if ($onResponse !== null) {
+			$this->transferring[$uuid->getBytes()] = $onResponse;
+		}
+		$this->thread->addPacketToQueue(TransferRequestPacket::create($uuid, $group, $server));
+	}
 
     /**
      * @internal

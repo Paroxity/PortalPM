@@ -5,3 +5,7 @@ socket:
 server:
   group: "Hub"
   name: "Hub1"
+command:
+  enable: true
+  commands:
+    transfer: true
