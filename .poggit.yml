@@ -2,7 +2,7 @@
 build-by-default: true
 branches:
 - master
-- 4.0
+- "4.0"
 projects:
   PortalPM:
     path: ""
