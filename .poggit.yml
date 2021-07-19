@@ -2,12 +2,12 @@
 build-by-default: true
 branches:
 - master
-- 4.0
+- "4.0"
 projects:
   PortalPM:
     path: ""
     libs:
-    - src: Paroxity/Commando/Commando
-      version: ^3.0.0
-      branch: PM-4.0
+      - src: Paroxity/Commando/Commando
+        version: ^3.0.0
+        branch: PM-4.0
 ...
