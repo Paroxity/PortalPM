@@ -58,8 +58,10 @@ class FindPlayerResponsePacket extends Packet
         $this->playerUUID = $in->getUUID();
         $this->playerName = $in->getString();
         $this->online = $in->getBool();
-        $this->group = $in->getString();
-        $this->server = $in->getString();
+        if($this->online) {
+	        $this->group = $in->getString();
+	        $this->server = $in->getString();
+        }
     }
 
     public function encodePayload(PacketSerializer $out): void
@@ -67,8 +69,10 @@ class FindPlayerResponsePacket extends Packet
         $out->putUUID($this->playerUUID);
         $out->putString($this->playerName);
         $out->putBool($this->online);
-        $out->putString($this->group);
-        $out->putString($this->server);
+	    if($this->online) {
+		    $out->putString($this->group);
+		    $out->putString($this->server);
+	    }
     }
 
     public function handlePacket(): void
