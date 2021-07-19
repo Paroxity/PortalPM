@@ -163,10 +163,10 @@ class SocketThread extends Thread
 
     public function addPacketToQueue(Packet $packet): void
     {
-	    $encoderContext = new PacketSerializerContext(GlobalItemTypeDictionary::getInstance()->getDictionary());
-	    $serializer = PacketSerializer::encoder($encoderContext);
-        $packet->encode($serializer);
-	    $this->sendQueue[] = $serializer->getBuffer();
+    	$encoderContext = new PacketSerializerContext(GlobalItemTypeDictionary::getInstance()->getDictionary());
+    	$serializer = PacketSerializer::encoder($encoderContext);
+    	$packet->encode($serializer);
+    	$this->sendQueue[] = $serializer->getBuffer();
     }
 
     public function getBuffer(): ?string

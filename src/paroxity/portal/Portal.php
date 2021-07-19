@@ -73,9 +73,9 @@ class Portal extends PluginBase implements Listener
         $this->thread = new SocketThread($host, $port, $secret, $name, $group, $address, $notifier);
 
         $this->getServer()->getTickSleeper()->addNotifier($notifier, function () {
-	        $context = new PacketSerializerContext(GlobalItemTypeDictionary::getInstance()->getDictionary());
+        	$context = new PacketSerializerContext(GlobalItemTypeDictionary::getInstance()->getDictionary());
             while (($buffer = $this->thread->getBuffer()) !== null) {
-	            $stream = PacketSerializer::decoder($buffer, 0, $context);
+            	$stream = PacketSerializer::decoder($buffer, 0, $context);
                 $packet = PacketPool::getPacket($buffer);
                 if ($packet instanceof Packet) {
                     $packet->decode($stream);

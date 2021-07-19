@@ -23,7 +23,7 @@ class UnknownPacket extends Packet
     }
 
     public function decode(PacketSerializer $in): void{
-        $this->payload = $in->getRemaining();
+    	$this->payload = $in->getRemaining();
     }
 
     public function encode(PacketSerializer $out): void{

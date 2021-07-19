@@ -24,7 +24,7 @@ abstract class Packet
 
     public function decode(PacketSerializer $in): void
     {
-	    $in->rewind();
+    	$in->rewind();
         $this->decodeHeader($in);
         $this->decodePayload($in);
     }
