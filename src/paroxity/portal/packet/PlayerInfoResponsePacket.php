@@ -11,7 +11,10 @@ class PlayerInfoResponsePacket extends Packet
 {
     public const NETWORK_ID = ProtocolInfo::PLAYER_INFO_RESPONSE_PACKET;
 
-    public UuidInterface $playerUUID;
+	public const RESPONSE_SUCCESS = 0;
+	public const RESPONSE_PLAYER_NOT_FOUND = 1;
+
+	public UuidInterface $playerUUID;
     public int $status;
     public string $xuid;
     public string $address;
