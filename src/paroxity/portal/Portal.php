@@ -155,7 +155,7 @@ class Portal extends PluginBase implements Listener
         if ($closure !== null) {
             unset($this->playerInfoRequests[$packet->getPlayerUUID()->toBinary()]);
             $player = $this->getServer()->getPlayerByUUID($packet->getPlayerUUID());
-            $closure($player, $packet->status, $packet->xuid, $packet->address);
+            $closure($packet->getPlayerUUID(), $player, $packet->status, $packet->xuid, $packet->address);
         }
     }
 
