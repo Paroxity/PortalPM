@@ -85,30 +85,42 @@ class SocketThread extends Thread
             }
 
             do {
-                $read = socket_read($socket, 4);
-                if(!$read && socket_last_error($socket) === 10054) {
-                    socket_close($socket);
-                    $socket = $this->connectToSocketServer();
-                    if($socket === null) {
-                        break;
-                    }
-                }
-                if($read !== false) {
-                    if (strlen($read) === 4) {
-                        $length = Binary::readLInt($read);
-                        $read = @socket_read($socket, $length);
-                        if ($read !== false) {
-                            $this->receiveBuffer[] = $read;
-                            $this->notifier->wakeupSleeper();
-                        }
-                    } elseif ($read === "") {
-                        socket_close($socket);
-                        $socket = $this->connectToSocketServer();
-                        if($socket === null) {
-                            break;
-                        }
-                    }
-                }
+            	try {
+            		// socket_read should return false on error but due to a php bug (most likely) an exception is thrown when
+		            // the socket server goes offline which causes the thread to halt and not reconnect when the socket server
+		            // comes back online - thus this try... catch.. block
+		            $read = socket_read($socket, 4);
+		            if (!$read && socket_last_error($socket) === 10054) {
+			            socket_close($socket);
+			            $socket = $this->connectToSocketServer();
+			            if ($socket === null) {
+				            break;
+			            }
+		            }
+		            if ($read !== false) {
+			            if (strlen($read) === 4) {
+				            $length = Binary::readLInt($read);
+				            $read = @socket_read($socket, $length);
+				            if ($read !== false) {
+					            $this->receiveBuffer[] = $read;
+					            $this->notifier->wakeupSleeper();
+				            }
+			            } elseif ($read === "") {
+				            socket_close($socket);
+				            $socket = $this->connectToSocketServer();
+				            if ($socket === null) {
+					            break;
+				            }
+			            }
+		            }
+	            }
+	            catch (Exception) {
+		            socket_close($socket);
+		            $socket = $this->connectToSocketServer();
+		            if ($socket === null) {
+			            break;
+		            }
+	            }
             } while ($read !== false);
             usleep(25000);
         }
