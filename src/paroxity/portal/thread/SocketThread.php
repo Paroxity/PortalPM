@@ -83,7 +83,7 @@ class SocketThread extends Thread
             }
 
             do {
-                $read = socket_read($socket, 4);
+                $read = @socket_read($socket, 4);
                 if(!$read && socket_last_error($socket) === 10054) {
                     socket_close($socket);
                     $socket = $this->connectToSocketServer();
