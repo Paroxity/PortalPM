@@ -119,10 +119,10 @@ class Portal extends PluginBase implements Listener
 
     public function transferPlayer(Player $player, string $server, ?Closure $onResponse): void
     {
-    	$this->transferPlayerByUUID($player->getUniqueId(), $group, $server, $onResponse);
+    	$this->transferPlayerByUUID($player->getUniqueId(), $server, $onResponse);
     }
 
-	public function transferPlayerByUUID(UuidInterface $uuid, string $group, string $server, ?Closure $onResponse): void
+	public function transferPlayerByUUID(UuidInterface $uuid, string $server, ?Closure $onResponse): void
 	{
 		if ($onResponse !== null) {
 			$this->transferring[$uuid->getBytes()] = $onResponse;

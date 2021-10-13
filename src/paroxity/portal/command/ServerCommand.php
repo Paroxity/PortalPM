@@ -49,16 +49,16 @@ class ServerCommand extends BaseCommand
 			$target = $args["player"];
 		}
 
-		$plugin->findPlayer(null, $target, function(UuidInterface $uuid, string $playerName, bool $online, string $group, string $server) use ($sender): void {
+		$plugin->findPlayer(null, $target, function(UuidInterface $uuid, string $playerName, bool $online, string $server) use ($sender): void {
 			if(!$online) {
 				$sender->sendMessage(TextFormat::RED . "Player: $playerName could not be found");
 				return;
 			}
 
 			if(strtolower($sender->getName()) === strtolower($playerName)) {
-				$sender->sendMessage(TextFormat::GREEN . "You are currently on $group:$server");
+				$sender->sendMessage(TextFormat::GREEN . "You are currently on $server");
 			}else{
-				$sender->sendMessage(TextFormat::GREEN . "Player: $playerName is currently on $group:$server");
+				$sender->sendMessage(TextFormat::GREEN . "Player: $playerName is currently on $server");
 			}
 		});
 	}
