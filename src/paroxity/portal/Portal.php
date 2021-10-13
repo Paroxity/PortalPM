@@ -67,7 +67,6 @@ class Portal extends PluginBase implements Listener
         $secret = $config->getNested("socket.secret", "");
 
         $name = $config->getNested("server.name", "Name");
-        $group = $config->getNested("server.group", "Hub");
         $address = ($host === "127.0.0.1" ? "127.0.0.1" : Internet::getIP()) . ":" . $this->getServer()->getPort();
 
         if(!PacketHooker::isRegistered()){
@@ -78,7 +77,7 @@ class Portal extends PluginBase implements Listener
         CommandMap::init($this);
 
         $notifier = new SleeperNotifier();
-        $this->thread = new SocketThread($host, $port, $secret, $name, $group, $address, $notifier);
+        $this->thread = new SocketThread($host, $port, $secret, $name, $address, $notifier);
 
         $this->getServer()->getTickSleeper()->addNotifier($notifier, function () {
         	$context = new PacketSerializerContext(GlobalItemTypeDictionary::getInstance()->getDictionary());
@@ -118,7 +117,7 @@ class Portal extends PluginBase implements Listener
         unset($this->playerLatencies[$event->getPlayer()->getUniqueId()->getBytes()]);
     }
 
-    public function transferPlayer(Player $player, string $group, string $server, ?Closure $onResponse): void
+    public function transferPlayer(Player $player, string $server, ?Closure $onResponse): void
     {
     	$this->transferPlayerByUUID($player->getUniqueId(), $group, $server, $onResponse);
     }
@@ -128,7 +127,7 @@ class Portal extends PluginBase implements Listener
 		if ($onResponse !== null) {
 			$this->transferring[$uuid->getBytes()] = $onResponse;
 		}
-		$this->thread->addPacketToQueue(TransferRequestPacket::create($uuid, $group, $server));
+		$this->thread->addPacketToQueue(TransferRequestPacket::create($uuid, $server));
 	}
 
     /**
@@ -207,7 +206,7 @@ class Portal extends PluginBase implements Listener
         $closure = $this->findPlayerRequests[$packet->playerUUID->getBytes()] ?? $this->findPlayerRequests[strtolower($packet->playerName)];
         if($closure !== null) {
         	$online = $packet->online;
-            $closure($packet->playerUUID, $packet->playerName, $online, $online ? $packet->group : "", $online ? $packet->server : "");
+            $closure($packet->playerUUID, $packet->playerName, $online, $online ? $packet->server : "");
         }
     }
 

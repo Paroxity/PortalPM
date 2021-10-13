@@ -35,7 +35,6 @@ class SocketThread extends Thread
 
     private string $secret;
     private string $name;
-    private string $group;
     private string $address;
 
     private Threaded $sendQueue;
@@ -45,7 +44,7 @@ class SocketThread extends Thread
 
     private bool $isRunning;
 
-    public function __construct(string $host, int $port, string $secret, string $name, string $group, string $address, SleeperNotifier $notifier)
+    public function __construct(string $host, int $port, string $secret, string $name, string $address, SleeperNotifier $notifier)
     {
         $this->host = $host;
         $this->port = $port;
@@ -53,7 +52,6 @@ class SocketThread extends Thread
         $this->secret = $secret;
 
         $this->name = $name;
-        $this->group = $group;
         $this->address = $address;
 
         $this->sendQueue = new Threaded();
@@ -142,7 +140,7 @@ class SocketThread extends Thread
         } while (!$connected);
         socket_set_nonblock($socket);
 
-        $extraData = Binary::writeUnsignedVarInt(strlen($this->group)) . $this->group . Binary::writeUnsignedVarInt(strlen($this->address)) . $this->address;
+        $extraData = Binary::writeUnsignedVarInt(strlen($this->address)) . $this->address;
         $pk = AuthRequestPacket::create(AuthRequestPacket::CLIENT_TYPE_SERVER, $this->secret, $this->name, $extraData);
         $this->addPacketToQueue($pk);
 
