@@ -62,13 +62,12 @@ class Portal extends PluginBase implements Listener
         $secret = $config->getNested("socket.secret", "");
 
         $name = $config->getNested("server.name", "Name");
-        $group = $config->getNested("server.group", "Hub");
         $address = ($host === "127.0.0.1" ? "127.0.0.1" : Internet::getIP()) . ":" . $this->getServer()->getPort();
 
         PacketPool::init();
 
         $notifier = new SleeperNotifier();
-        $this->thread = $thread = new SocketThread($host, $port, $secret, $name, $group, $address, $notifier);
+        $this->thread = $thread = new SocketThread($host, $port, $secret, $name, $address, $notifier);
 
         $this->getServer()->getTickSleeper()->addNotifier($notifier, static function () use ($thread) {
             while (($buffer = $thread->getBuffer()) !== null) {
@@ -110,14 +109,14 @@ class Portal extends PluginBase implements Listener
         unset($this->playerLatencies[$uuid->toBinary()]);
     }
 
-    public function transferPlayer(Player $player, string $group, string $server, ?Closure $onResponse): void
+    public function transferPlayer(Player $player, string $server, ?Closure $onResponse): void
     {
         if ($onResponse !== null) {
             $this->transferring[$player->getRawUniqueId()] = $onResponse;
         }
         /** @var UUID $uuid */
         $uuid = $player->getUniqueId();
-        $this->thread->addPacketToQueue(TransferRequestPacket::create($uuid, $group, $server));
+        $this->thread->addPacketToQueue(TransferRequestPacket::create($uuid, $server));
     }
 
     /**
@@ -199,7 +198,7 @@ class Portal extends PluginBase implements Listener
     {
         $closure = $this->findPlayerRequests[$packet->playerUUID->toBinary()] ?? $this->findPlayerRequests[$packet->name];
         if($closure !== null) {
-            $closure($packet->playerUUID, $packet->name, $packet->online, $packet->group, $packet->server);
+            $closure($packet->playerUUID, $packet->name, $packet->online, $packet->server);
         }
     }
 

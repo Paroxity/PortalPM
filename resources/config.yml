@@ -3,5 +3,4 @@ socket:
   port: 19131
   secret: ""
 server:
-  group: "Hub"
   name: "Hub1"

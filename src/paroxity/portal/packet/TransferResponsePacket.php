@@ -11,11 +11,10 @@ class TransferResponsePacket extends Packet
     public const NETWORK_ID = ProtocolInfo::TRANSFER_RESPONSE_PACKET;
 
     public const RESPONSE_SUCCESS = 0;
-    public const RESPONSE_GROUP_NOT_FOUND = 1;
-    public const RESPONSE_SERVER_NOT_FOUND = 2;
-    public const RESPONSE_ALREADY_ON_SERVER = 3;
-    public const RESPONSE_PLAYER_NOT_FOUND = 4;
-    public const RESPONSE_ERROR = 5;
+    public const RESPONSE_SERVER_NOT_FOUND = 1;
+    public const RESPONSE_ALREADY_ON_SERVER = 2;
+    public const RESPONSE_PLAYER_NOT_FOUND = 3;
+    public const RESPONSE_ERROR = 4;
 
     public UUID $playerUUID;
     public int $status;
