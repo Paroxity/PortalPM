@@ -6,6 +6,7 @@ namespace paroxity\portal\thread;
 use Exception;
 use paroxity\portal\packet\AuthRequestPacket;
 use paroxity\portal\packet\Packet;
+use paroxity\portal\packet\ProtocolInfo;
 use pocketmine\network\mcpe\convert\GlobalItemTypeDictionary;
 use pocketmine\network\mcpe\protocol\serializer\PacketSerializer;
 use pocketmine\network\mcpe\protocol\serializer\PacketSerializerContext;
@@ -35,7 +36,6 @@ class SocketThread extends Thread
 
     private string $secret;
     private string $name;
-    private string $address;
 
     private Threaded $sendQueue;
     private Threaded $receiveBuffer;
@@ -44,7 +44,7 @@ class SocketThread extends Thread
 
     private bool $isRunning;
 
-    public function __construct(string $host, int $port, string $secret, string $name, string $address, SleeperNotifier $notifier)
+    public function __construct(string $host, int $port, string $secret, string $name, SleeperNotifier $notifier)
     {
         $this->host = $host;
         $this->port = $port;
@@ -52,7 +52,6 @@ class SocketThread extends Thread
         $this->secret = $secret;
 
         $this->name = $name;
-        $this->address = $address;
 
         $this->sendQueue = new Threaded();
         $this->receiveBuffer = new Threaded();
@@ -140,8 +139,7 @@ class SocketThread extends Thread
         } while (!$connected);
         socket_set_nonblock($socket);
 
-        $extraData = Binary::writeUnsignedVarInt(strlen($this->address)) . $this->address;
-        $pk = AuthRequestPacket::create(AuthRequestPacket::CLIENT_TYPE_SERVER, $this->secret, $this->name, $extraData);
+        $pk = AuthRequestPacket::create(ProtocolInfo::PROTOCOL_VERSION, $this->secret, $this->name);
         $this->addPacketToQueue($pk);
 
         return $socket;

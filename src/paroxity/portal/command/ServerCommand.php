@@ -31,25 +31,20 @@ class ServerCommand extends BaseCommand
 
 	public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
 	{
-		/** @var Portal $plugin */
-		$plugin = $this->plugin;
 		$target = $sender->getName();
-
 		if($sender instanceof ConsoleCommandSender && !isset($args["player"])) {
 			$this->sendUsage();
 			return;
 		}
-
 		if(isset($args["player"]) && !$sender->hasPermission("portal.command.server.other")) {
 			$sender->sendMessage(TextFormat::RED . "You don't have the permission to check server of other player");
 			return;
 		}
-
 		if(isset($args["player"])) {
 			$target = $args["player"];
 		}
 
-		$plugin->findPlayer(null, $target, function(UuidInterface $uuid, string $playerName, bool $online, string $server) use ($sender): void {
+		$this->plugin->findPlayer(null, $target, function(UuidInterface $uuid, string $playerName, bool $online, string $server) use ($sender): void {
 			if(!$online) {
 				$sender->sendMessage(TextFormat::RED . "Player: $playerName could not be found");
 				return;

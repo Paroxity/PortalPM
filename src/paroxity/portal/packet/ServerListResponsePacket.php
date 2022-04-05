@@ -37,8 +37,7 @@ class ServerListResponsePacket extends Packet
         for($i = 0, $count = $in->getLInt(); $i < $count; ++$i) {
             $this->servers[$i] = ServerListEntry::create(
                 $in->getString(),
-                $in->getBool(),
-                $in->getVarLong(),
+                $in->getLLong(),
             );
         }
     }
@@ -48,8 +47,7 @@ class ServerListResponsePacket extends Packet
         $out->putLInt(count($this->servers));
         foreach($this->servers as $server){
             $out->putString($server->getName());
-            $out->putBool($server->isOnline());
-            $out->putVarLong($server->getPlayerCount());
+            $out->putLLong($server->getPlayerCount());
         }
     }
 

@@ -13,3 +13,5 @@ permissions:
     default: true
   portal.command.server.other:
     default: op
+  portal.command.servers:
+    default: op

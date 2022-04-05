@@ -6,12 +6,16 @@ namespace paroxity\portal;
 use Closure;
 use CortexPE\Commando\PacketHooker;
 use paroxity\portal\command\CommandMap;
+use paroxity\portal\exception\PortalAuthException;
+use paroxity\portal\packet\AuthResponsePacket;
 use paroxity\portal\packet\FindPlayerRequestPacket;
 use paroxity\portal\packet\FindPlayerResponsePacket;
 use paroxity\portal\packet\Packet;
 use paroxity\portal\packet\PacketPool;
 use paroxity\portal\packet\PlayerInfoRequestPacket;
 use paroxity\portal\packet\PlayerInfoResponsePacket;
+use paroxity\portal\packet\ProtocolInfo;
+use paroxity\portal\packet\RegisterServerPacket;
 use paroxity\portal\packet\ServerListRequestPacket;
 use paroxity\portal\packet\ServerListResponsePacket;
 use paroxity\portal\packet\TransferRequestPacket;
@@ -37,6 +41,7 @@ class Portal extends PluginBase implements Listener
     private static self $instance;
 
     private SocketThread $thread;
+	private string $address;
 
     /** @var Closure[] */
     private $transferring = [];
@@ -67,7 +72,7 @@ class Portal extends PluginBase implements Listener
         $secret = $config->getNested("socket.secret", "");
 
         $name = $config->getNested("server.name", "Name");
-        $address = ($host === "127.0.0.1" ? "127.0.0.1" : Internet::getIP()) . ":" . $this->getServer()->getPort();
+        $this->address = ($host === "127.0.0.1" ? "127.0.0.1" : Internet::getIP()) . ":" . $this->getServer()->getPort();
 
         if(!PacketHooker::isRegistered()){
 	        PacketHooker::register($this);
@@ -77,8 +82,6 @@ class Portal extends PluginBase implements Listener
         CommandMap::init($this);
 
         $notifier = new SleeperNotifier();
-        $this->thread = new SocketThread($host, $port, $secret, $name, $address, $notifier);
-
         $this->getServer()->getTickSleeper()->addNotifier($notifier, function () {
         	$context = new PacketSerializerContext(GlobalItemTypeDictionary::getInstance()->getDictionary());
             while (($buffer = $this->thread->getBuffer()) !== null) {
@@ -90,6 +93,7 @@ class Portal extends PluginBase implements Listener
                 }
             }
         });
+	    $this->thread = new SocketThread($host, $port, $secret, $name, $notifier);
     }
 
     public function onDisable(): void
@@ -129,6 +133,33 @@ class Portal extends PluginBase implements Listener
 		}
 		$this->thread->addPacketToQueue(TransferRequestPacket::create($uuid, $server));
 	}
+
+    /**
+     * @internal
+     */
+    public function handleAuthResponse(AuthResponsePacket $packet): void
+    {
+	    if ($packet->getStatus() !== AuthResponsePacket::RESPONSE_SUCCESS) {
+		    $reason = "";
+		    switch ($packet->getStatus()) {
+			    case AuthResponsePacket::RESPONSE_UNSUPPORTED_PROTOCOL:
+				    $reason = "Unsupported protocol version, expected " . $packet->getProtocol() . " got " . ProtocolInfo::PROTOCOL_VERSION;
+				    break;
+			    case AuthResponsePacket::RESPONSE_INCORRECT_SECRET:
+				    $reason = "Incorrect secret provided";
+				    break;
+			    case AuthResponsePacket::RESPONSE_ALREADY_CONNECTED:
+				    $reason = "Client already exists with the provided name";
+				    break;
+			    case AuthResponsePacket::RESPONSE_UNAUTHENTICATED:
+				    $reason = "Attempted to send packets whilst not authenticated";
+				    break;
+		    }
+		    throw new PortalAuthException($reason);
+	    }
+	    $this->getLogger()->info("Authenticated with socket server");
+		$this->thread->addPacketToQueue(RegisterServerPacket::create($this->address));
+    }
 
     /**
      * @internal

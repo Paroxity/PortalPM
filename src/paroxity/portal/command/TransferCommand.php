@@ -34,12 +34,9 @@ class TransferCommand extends BaseCommand
 
 	public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
 	{
-		/** @var Portal $plugin */
-		$plugin = $this->plugin;
-		$player = $plugin->getServer()->getPlayerByPrefix($args["player"]);
-
+		$player = $this->plugin->getServer()->getPlayerByPrefix($args["player"]);
 		if(!$player instanceof Player){
-			$plugin->findPlayer(null, $args["player"], function(UuidInterface $uuid, string $playerName, bool $online, string $server) use ($sender, $args): void {
+			$this->plugin->findPlayer(null, $args["player"], function(UuidInterface $uuid, string $playerName, bool $online, string $server) use ($sender, $args): void {
 				if(!$online) {
 					$sender->sendMessage(TextFormat::RED . "Player could not be found");
 					return;
@@ -55,9 +52,7 @@ class TransferCommand extends BaseCommand
 
 	private function transfer(CommandSender $sender, UuidInterface $uuid, string $server): void
 	{
-		/** @var Portal $plugin */
-		$plugin = $this->plugin;
-		$plugin->transferPlayerByUUID($uuid, $server, function(?Player $player, int $status, string $error) use ($sender, $server): void {
+		$this->plugin->transferPlayerByUUID($uuid, $server, function(?Player $player, int $status, string $error) use ($sender, $server): void {
 			switch($status) {
 				case TransferResponsePacket::RESPONSE_SUCCESS:
 					if($sender !== $player && !$sender instanceof ConsoleCommandSender) {

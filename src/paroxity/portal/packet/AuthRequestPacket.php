@@ -9,22 +9,23 @@ class AuthRequestPacket extends Packet
 {
     public const NETWORK_ID = ProtocolInfo::AUTH_REQUEST_PACKET;
 
-    public const CLIENT_TYPE_SERVER = 0;
+    private int $protocol;
+	private string $secret;
+	private string $name;
 
-    public int $type;
-    public string $secret;
-    public string $name;
-    public string $extraData;
-
-    public static function create(int $type, string $secret, string $name, string $extraData): self
+    public static function create(int $protocol, string $secret, string $name): self
     {
         $result = new self;
-        $result->type = $type;
+        $result->protocol = $protocol;
         $result->secret = $secret;
         $result->name = $name;
-        $result->extraData = $extraData;
         return $result;
     }
+
+	public function getProtocol(): int
+	{
+		return $this->protocol;
+	}
 
     public function getSecret(): string
     {
@@ -36,30 +37,18 @@ class AuthRequestPacket extends Packet
         return $this->name;
     }
 
-    public function getType(): int
-    {
-        return $this->type;
-    }
-
-    public function getExtraData(): string
-    {
-        return $this->extraData;
-    }
-
     protected function decodePayload(PacketSerializer $in): void
     {
-        $this->type = $in->getByte();
+        $this->protocol = $in->getLInt();
         $this->secret = $in->getString();
         $this->name = $in->getString();
-        $this->extraData = $in->getRemaining();
     }
 
     protected function encodePayload(PacketSerializer $out): void
     {
-        $out->putByte($this->type);
+        $out->putLInt($this->protocol);
         $out->putString($this->secret);
         $out->putString($this->name);
-        $out->put($this->extraData);
     }
 
     public function handlePacket(): void
