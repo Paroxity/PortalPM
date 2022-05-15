@@ -10,4 +10,4 @@ parameters:
     analyse:
       - source/vendor
   ignoreErrors:
-  	- '#[a-zA-Z0-9\\_]+ type has no value type specified in iterable type [a-zA-Z0-9\\_]+.#'
+  	- '#[a-zA-Z0-9\\_]+ no value type specified in iterable type [a-zA-Z0-9\\_]+.#'
