@@ -59,7 +59,7 @@ class TransferCommand extends BaseCommand
 	private function transfer(CommandSender $sender, UuidInterface $uuid, string $server): void
 	{
 		$this->plugin->transferPlayerByUUID($uuid, $server, function(?Player $player, int $status, string $error) use ($sender, $server): void {
-			if(!$player->isOnline()){
+			if($player === null || !$player->isOnline()){
 				return;
 			}
 			switch($status) {

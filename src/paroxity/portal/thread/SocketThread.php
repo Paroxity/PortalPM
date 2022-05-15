@@ -69,7 +69,7 @@ class SocketThread extends Thread
 
         $socket = $this->connectToSocketServer();
 
-        while ($this->isRunning) {
+        while ($socket !== null && $this->isRunning) {
             while (($send = $this->sendQueue->shift()) !== null) {
                 $length = strlen($send);
                 $wrote = @socket_write($socket, Binary::writeLInt($length) . $send, 4 + $length);
@@ -130,9 +130,6 @@ class SocketThread extends Thread
         } while (!$socket);
 
         do {
-            if(!$this->isRunning) {
-                return null;
-            }
             $connected = @socket_connect($socket, $this->host, $this->port);
             if (!$connected) {
                 sleep(5);
