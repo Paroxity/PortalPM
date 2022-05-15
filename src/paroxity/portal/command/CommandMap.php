@@ -10,7 +10,7 @@ class CommandMap
 {
 	private static Portal $plugin;
 
-	public static function init(Portal $plugin)
+	public static function init(Portal $plugin): void
 	{
 		self::$plugin = $plugin;
 
@@ -23,7 +23,8 @@ class CommandMap
 		self::registerCommand("servers", new ServersCommand($plugin));
 	}
 
-	private static function registerCommand(string $name, BaseCommand $command) {
+	private static function registerCommand(string $name, BaseCommand $command): void
+	{
 		if(!self::$plugin->getConfig()->getNested("command.commands." . $name, true)){
 			return;
 		}

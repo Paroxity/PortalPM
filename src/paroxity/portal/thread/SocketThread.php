@@ -13,6 +13,7 @@ use pocketmine\network\mcpe\protocol\serializer\PacketSerializerContext;
 use pocketmine\snooze\SleeperNotifier;
 use pocketmine\thread\Thread;
 use pocketmine\utils\Binary;
+use Socket;
 use Threaded;
 use function sleep;
 use function socket_close;
@@ -116,7 +117,7 @@ class SocketThread extends Thread
     }
 
     /**
-     * @return resource
+     * @return ?Socket
      * @throws Exception
      */
     public function connectToSocketServer()

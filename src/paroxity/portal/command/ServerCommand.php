@@ -14,6 +14,9 @@ use function strtolower;
 
 class ServerCommand extends BaseCommand
 {
+	/** @var Portal */
+	protected $plugin;
+
 	public function __construct(Portal $plugin)
 	{
 		parent::__construct(
@@ -29,6 +32,9 @@ class ServerCommand extends BaseCommand
 		$this->registerArgument(0, new TargetPlayerArgument(true));
 	}
 
+	/**
+	 * @param mixed[] $args
+	 */
 	public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
 	{
 		$target = $sender->getName();

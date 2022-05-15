@@ -16,6 +16,9 @@ use Ramsey\Uuid\UuidInterface;
 
 class TransferCommand extends BaseCommand
 {
+	/** @var Portal */
+	protected $plugin;
+
 	public function __construct(Portal $plugin)
 	{
 		parent::__construct(
@@ -32,6 +35,9 @@ class TransferCommand extends BaseCommand
 		$this->registerArgument(1, new RawStringArgument("server"));
 	}
 
+	/**
+	 * @param mixed[] $args
+	 */
 	public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
 	{
 		$player = $this->plugin->getServer()->getPlayerByPrefix($args["player"]);
@@ -53,6 +59,9 @@ class TransferCommand extends BaseCommand
 	private function transfer(CommandSender $sender, UuidInterface $uuid, string $server): void
 	{
 		$this->plugin->transferPlayerByUUID($uuid, $server, function(?Player $player, int $status, string $error) use ($sender, $server): void {
+			if(!$player->isOnline()){
+				return;
+			}
 			switch($status) {
 				case TransferResponsePacket::RESPONSE_SUCCESS:
 					if($sender !== $player && !$sender instanceof ConsoleCommandSender) {

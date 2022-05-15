@@ -11,6 +11,9 @@ use pocketmine\utils\TextFormat;
 
 class ServersCommand extends BaseCommand
 {
+	/** @var Portal */
+	protected $plugin;
+
 	public function __construct(Portal $plugin)
 	{
 		parent::__construct(
@@ -26,6 +29,9 @@ class ServersCommand extends BaseCommand
 		// NOOP
 	}
 
+	/**
+	 * @param mixed[] $args
+	 */
 	public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
 	{
 		$this->plugin->requestServerList(function(array $servers) use($sender) {
