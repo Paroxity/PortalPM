@@ -68,6 +68,9 @@ class SocketThread extends Thread
         $this->registerClassLoaders();
 
         $socket = $this->connectToSocketServer();
+		if($socket === null) {
+			return;
+		}
 
         while ($socket !== null && $this->isRunning) {
             while (($send = $this->sendQueue->shift()) !== null) {
