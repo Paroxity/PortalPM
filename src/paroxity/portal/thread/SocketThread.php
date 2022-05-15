@@ -80,7 +80,7 @@ class SocketThread extends Thread
                     socket_close($socket);
                     $socket = $this->connectToSocketServer();
                     if($socket === null) {
-                        break;
+                        return;
                     }
                 }
             }
@@ -91,7 +91,7 @@ class SocketThread extends Thread
                     socket_close($socket);
                     $socket = $this->connectToSocketServer();
                     if($socket === null) {
-                        break;
+	                    return;
                     }
                 }
                 if($read !== false) {
@@ -106,24 +106,17 @@ class SocketThread extends Thread
                         socket_close($socket);
                         $socket = $this->connectToSocketServer();
                         if($socket === null) {
-                            break;
+	                        return;
                         }
                     }
                 }
             } while ($read !== false);
             usleep(25000);
         }
-
-        if($socket !== null) {
-            socket_close($socket);
-        }
+	    socket_close($socket);
     }
 
-    /**
-     * @return ?Socket
-     * @throws Exception
-     */
-    public function connectToSocketServer()
+    public function connectToSocketServer(): ?Socket
     {
         do {
             if(!$this->isRunning) {
