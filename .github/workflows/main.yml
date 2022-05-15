@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-latest
     if: "!contains(github.event.head_commit.message, 'ci skip')"
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           ref: ${{ github.ref }}
       - name: Create Vendor Directory
@@ -16,6 +16,6 @@ jobs:
           mkdir vendor
           echo Directory made.
       - name: Run PHPStan
-        uses: nxtlvlsoftware/pmmp-phpstan-action@4
+        uses: paroxity/pmmp-phpstan-action@4.2.0
         with:
           phpstan-config: phpstan.neon.dist
