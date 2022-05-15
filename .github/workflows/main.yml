@@ -11,10 +11,10 @@ jobs:
         with:
           ref: ${{ github.ref }}
       - name: Create Vendor Directory
+        run: mkdir vendor
+      - name: Download Virion Dependencies
         run: |
-          echo Making directory...
-          mkdir vendor
-          echo Directory made.
+          wget -O vendor/Commando.phar https://poggit.pmmp.io/r/162923/Commando_dev-30.phar
       - name: Run PHPStan
         uses: paroxity/pmmp-phpstan-action@4.2.0
         with:
