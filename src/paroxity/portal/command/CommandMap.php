@@ -20,6 +20,7 @@ class CommandMap
 
 		self::registerCommand("transfer", new TransferCommand($plugin));
 		self::registerCommand("server", new ServerCommand($plugin));
+		self::registerCommand("servers", new ServersCommand($plugin));
 	}
 
 	private static function registerCommand(string $name, BaseCommand $command) {

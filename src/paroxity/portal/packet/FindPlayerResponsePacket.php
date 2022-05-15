@@ -14,16 +14,14 @@ class FindPlayerResponsePacket extends Packet
     public UuidInterface $playerUUID;
     public string $playerName;
     public bool $online;
-    public string $group;
     public string $server;
 
-    public static function create(UuidInterface $uuid, string $name, bool $online, string $group, string $server): self
+    public static function create(UuidInterface $uuid, string $name, bool $online, string $server): self
     {
         $result = new self;
         $result->playerUUID = $uuid;
         $result->playerName = $name;
         $result->online = $online;
-        $result->group = $group;
         $result->server = $server;
         return $result;
     }
@@ -43,11 +41,6 @@ class FindPlayerResponsePacket extends Packet
         return $this->online;
     }
 
-    public function getGroup(): string
-    {
-        return $this->group;
-    }
-
     public function getServer(): string
     {
         return $this->server;
@@ -59,7 +52,6 @@ class FindPlayerResponsePacket extends Packet
         $this->playerName = $in->getString();
         $this->online = $in->getBool();
         if($this->online) {
-	        $this->group = $in->getString();
 	        $this->server = $in->getString();
         }
     }
@@ -70,7 +62,6 @@ class FindPlayerResponsePacket extends Packet
         $out->putString($this->playerName);
         $out->putBool($this->online);
 	    if($this->online) {
-		    $out->putString($this->group);
 		    $out->putString($this->server);
 	    }
     }

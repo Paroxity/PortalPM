@@ -11,14 +11,12 @@ class TransferRequestPacket extends Packet
     public const NETWORK_ID = ProtocolInfo::TRANSFER_REQUEST_PACKET;
 
     public UuidInterface $playerUUID;
-    public string $group;
     public string $server;
 
-    public static function create(UuidInterface $playerUUID, string $group, string $server): self
+    public static function create(UuidInterface $playerUUID, string $server): self
     {
         $result = new self;
         $result->playerUUID = $playerUUID;
-        $result->group = $group;
         $result->server = $server;
         return $result;
     }
@@ -26,11 +24,6 @@ class TransferRequestPacket extends Packet
     public function getPlayerUUID(): UuidInterface
     {
         return $this->playerUUID;
-    }
-
-    public function getGroup(): string
-    {
-        return $this->group;
     }
 
     public function getServer(): string
@@ -41,14 +34,12 @@ class TransferRequestPacket extends Packet
     protected function decodePayload(PacketSerializer $in): void
     {
         $this->playerUUID = $in->getUUID();
-        $this->group = $in->getString();
         $this->server = $in->getString();
     }
 
     protected function encodePayload(PacketSerializer $out): void
     {
         $out->putUUID($this->playerUUID);
-        $out->putString($this->group);
         $out->putString($this->server);
     }
 

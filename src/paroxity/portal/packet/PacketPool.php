@@ -15,6 +15,7 @@ class PacketPool
     {
         static::registerPacket(new AuthRequestPacket());
         static::registerPacket(new AuthResponsePacket());
+        static::registerPacket(new RegisterServerPacket());
         static::registerPacket(new TransferRequestPacket());
         static::registerPacket(new TransferResponsePacket());
         static::registerPacket(new PlayerInfoRequestPacket());

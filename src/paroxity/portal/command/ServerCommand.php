@@ -31,34 +31,29 @@ class ServerCommand extends BaseCommand
 
 	public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
 	{
-		/** @var Portal $plugin */
-		$plugin = $this->plugin;
 		$target = $sender->getName();
-
 		if($sender instanceof ConsoleCommandSender && !isset($args["player"])) {
 			$this->sendUsage();
 			return;
 		}
-
 		if(isset($args["player"]) && !$sender->hasPermission("portal.command.server.other")) {
 			$sender->sendMessage(TextFormat::RED . "You don't have the permission to check server of other player");
 			return;
 		}
-
 		if(isset($args["player"])) {
 			$target = $args["player"];
 		}
 
-		$plugin->findPlayer(null, $target, function(UuidInterface $uuid, string $playerName, bool $online, string $group, string $server) use ($sender): void {
+		$this->plugin->findPlayer(null, $target, function(UuidInterface $uuid, string $playerName, bool $online, string $server) use ($sender): void {
 			if(!$online) {
 				$sender->sendMessage(TextFormat::RED . "Player: $playerName could not be found");
 				return;
 			}
 
 			if(strtolower($sender->getName()) === strtolower($playerName)) {
-				$sender->sendMessage(TextFormat::GREEN . "You are currently on $group:$server");
+				$sender->sendMessage(TextFormat::GREEN . "You are currently on $server");
 			}else{
-				$sender->sendMessage(TextFormat::GREEN . "Player: $playerName is currently on $group:$server");
+				$sender->sendMessage(TextFormat::GREEN . "Player: $playerName is currently on $server");
 			}
 		});
 	}
