@@ -5,15 +5,22 @@ namespace paroxity\portal\packet;
 
 use paroxity\portal\packet\types\ServerListEntry;
 use paroxity\portal\Portal;
-use pocketmine\utils\UUID;
+use pocketmine\network\mcpe\protocol\serializer\PacketSerializer;
 
 class ServerListResponsePacket extends Packet
 {
-
     public const NETWORK_ID = ProtocolInfo::SERVER_LIST_RESPONSE_PACKET;
 
     /** @var ServerListEntry[] */
-    public $servers = [];
+    private array $servers = [];
+
+    /**
+     * @return ServerListEntry[]
+     */
+    public function getServers(): array
+    {
+        return $this->servers;
+    }
 
     /**
      * @param ServerListEntry[] $servers
@@ -25,26 +32,22 @@ class ServerListResponsePacket extends Packet
         return $result;
     }
 
-    public function decodePayload(): void
+    public function decodePayload(PacketSerializer $in): void
     {
-        for($i = 0, $count = $this->getLInt(); $i < $count; ++$i) {
+        for($i = 0, $count = $in->getLInt(); $i < $count; ++$i) {
             $this->servers[$i] = ServerListEntry::create(
-                $this->getString(),
-                $this->getString(),
-                $this->getBool(),
-                $this->getVarLong(),
+                $in->getString(),
+                $in->getLLong(),
             );
         }
     }
 
-    public function encodePayload(): void
+    public function encodePayload(PacketSerializer $out): void
     {
-        $this->putLInt(count($this->servers));
+        $out->putLInt(count($this->servers));
         foreach($this->servers as $server){
-            $this->putString($server->getName());
-            $this->putString($server->getGroup());
-            $this->putBool($server->isOnline());
-            $this->putVarLong($server->getPlayerCount());
+            $out->putString($server->getName());
+            $out->putLLong($server->getPlayerCount());
         }
     }
 

@@ -1,5 +1,4 @@
 <?php
-
 declare(strict_types=1);
 
 namespace paroxity\portal\packet;
@@ -16,6 +15,7 @@ class PacketPool
     {
         static::registerPacket(new AuthRequestPacket());
         static::registerPacket(new AuthResponsePacket());
+        static::registerPacket(new RegisterServerPacket());
         static::registerPacket(new TransferRequestPacket());
         static::registerPacket(new TransferResponsePacket());
         static::registerPacket(new PlayerInfoRequestPacket());
@@ -42,9 +42,6 @@ class PacketPool
      */
     public static function getPacket(string $buffer): Packet
     {
-        $pk = static::getPacketById(Binary::readLShort($buffer));
-        $pk->setBuffer($buffer, 2);
-
-        return $pk;
+        return static::getPacketById(Binary::readLShort($buffer));
     }
 }

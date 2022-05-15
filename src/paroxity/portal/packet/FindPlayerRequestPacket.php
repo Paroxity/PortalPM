@@ -3,34 +3,34 @@ declare(strict_types=1);
 
 namespace paroxity\portal\packet;
 
-use pocketmine\utils\UUID;
+use pocketmine\network\mcpe\protocol\serializer\PacketSerializer;
+use Ramsey\Uuid\UuidInterface;
 
 class FindPlayerRequestPacket extends Packet
 {
-
     public const NETWORK_ID = ProtocolInfo::FIND_PLAYER_REQUEST_PACKET;
 
-    public UUID $playerUUID;
-    public string $name;
+    public UuidInterface $playerUUID;
+    public string $playerName;
 
-    public static function create(UUID $playerUUID, string $name): self
+    public static function create(UuidInterface $uuid, string $name): self
     {
         $result = new self;
-        $result->playerUUID = $playerUUID;
-        $result->name = $name;
+        $result->playerUUID = $uuid;
+        $result->playerName = $name;
         return $result;
     }
 
-    public function decodePayload(): void
+    public function decodePayload(PacketSerializer $in): void
     {
-        $this->playerUUID = $this->getUUID();
-        $this->name = $this->getString();
+        $this->playerUUID = $in->getUUID();
+        $this->playerName = $in->getString();
     }
 
-    public function encodePayload(): void
+    public function encodePayload(PacketSerializer $out): void
     {
-        $this->putUUID($this->playerUUID);
-        $this->putString($this->name);
+        $out->putUUID($this->playerUUID);
+        $out->putString($this->playerName);
     }
 
     public function handlePacket(): void

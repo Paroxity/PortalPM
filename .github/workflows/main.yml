@@ -16,6 +16,6 @@ jobs:
           mkdir vendor
           echo Directory made.
       - name: Run PHPStan
-        uses: nxtlvlsoftware/pmmp-phpstan-action@3
+        uses: nxtlvlsoftware/pmmp-phpstan-action@4
         with:
           phpstan-config: phpstan.neon.dist

@@ -4,18 +4,22 @@ declare(strict_types=1);
 namespace paroxity\portal\packet;
 
 use paroxity\portal\Portal;
-use pocketmine\utils\UUID;
+use pocketmine\network\mcpe\protocol\serializer\PacketSerializer;
+use Ramsey\Uuid\UuidInterface;
 
 class PlayerInfoResponsePacket extends Packet
 {
     public const NETWORK_ID = ProtocolInfo::PLAYER_INFO_RESPONSE_PACKET;
 
-    public UUID $playerUUID;
+	public const RESPONSE_SUCCESS = 0;
+	public const RESPONSE_PLAYER_NOT_FOUND = 1;
+
+	public UuidInterface $playerUUID;
     public int $status;
     public string $xuid;
     public string $address;
 
-    public static function create(UUID $playerUUID, int $status, string $xuid, string $address): self
+    public static function create(UuidInterface $playerUUID, int $status, string $xuid, string $address): self
     {
         $result = new self;
         $result->playerUUID = $playerUUID;
@@ -25,7 +29,7 @@ class PlayerInfoResponsePacket extends Packet
         return $result;
     }
 
-    public function getPlayerUUID(): UUID
+    public function getPlayerUUID(): UuidInterface
     {
         return $this->playerUUID;
     }
@@ -45,20 +49,20 @@ class PlayerInfoResponsePacket extends Packet
         return $this->address;
     }
 
-    public function decodePayload(): void
+    public function decodePayload(PacketSerializer $in): void
     {
-        $this->playerUUID = $this->getUUID();
-        $this->status = $this->getByte();
-        $this->xuid = $this->getString();
-        $this->address = $this->getString();
+        $this->playerUUID = $in->getUUID();
+        $this->status = $in->getByte();
+        $this->xuid = $in->getString();
+        $this->address = $in->getString();
     }
 
-    public function encodePayload(): void
+    public function encodePayload(PacketSerializer $out): void
     {
-        $this->putUUID($this->playerUUID);
-        $this->putByte($this->status);
-        $this->putString($this->xuid);
-        $this->putString($this->address);
+        $out->putUUID($this->playerUUID);
+        $out->putByte($this->status);
+        $out->putString($this->xuid);
+        $out->putString($this->address);
     }
 
     public function handlePacket(): void

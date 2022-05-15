@@ -1,16 +1,21 @@
 <?php
-
 declare(strict_types=1);
 
 namespace paroxity\portal;
 
 use Closure;
+use CortexPE\Commando\PacketHooker;
+use paroxity\portal\command\CommandMap;
+use paroxity\portal\exception\PortalAuthException;
+use paroxity\portal\packet\AuthResponsePacket;
 use paroxity\portal\packet\FindPlayerRequestPacket;
 use paroxity\portal\packet\FindPlayerResponsePacket;
 use paroxity\portal\packet\Packet;
 use paroxity\portal\packet\PacketPool;
 use paroxity\portal\packet\PlayerInfoRequestPacket;
 use paroxity\portal\packet\PlayerInfoResponsePacket;
+use paroxity\portal\packet\ProtocolInfo;
+use paroxity\portal\packet\RegisterServerPacket;
 use paroxity\portal\packet\ServerListRequestPacket;
 use paroxity\portal\packet\ServerListResponsePacket;
 use paroxity\portal\packet\TransferRequestPacket;
@@ -20,18 +25,23 @@ use paroxity\portal\thread\SocketThread;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerJoinEvent;
 use pocketmine\event\player\PlayerQuitEvent;
-use pocketmine\Player;
+use pocketmine\network\mcpe\convert\GlobalItemTypeDictionary;
+use pocketmine\network\mcpe\protocol\serializer\PacketSerializer;
+use pocketmine\network\mcpe\protocol\serializer\PacketSerializerContext;
+use pocketmine\player\Player;
 use pocketmine\plugin\PluginBase;
 use pocketmine\snooze\SleeperNotifier;
 use pocketmine\utils\Internet;
-use pocketmine\utils\UUID;
-use function count;
+use Ramsey\Uuid\Uuid;
+use Ramsey\Uuid\UuidInterface;
+use function strtolower;
 
 class Portal extends PluginBase implements Listener
 {
     private static self $instance;
 
     private SocketThread $thread;
+	private string $address;
 
     /** @var Closure[] */
     private $transferring = [];
@@ -62,23 +72,28 @@ class Portal extends PluginBase implements Listener
         $secret = $config->getNested("socket.secret", "");
 
         $name = $config->getNested("server.name", "Name");
-        $group = $config->getNested("server.group", "Hub");
-        $address = ($host === "127.0.0.1" ? "127.0.0.1" : Internet::getIP()) . ":" . $this->getServer()->getPort();
+        $this->address = ($host === "127.0.0.1" ? "127.0.0.1" : Internet::getIP()) . ":" . $this->getServer()->getPort();
 
-        PacketPool::init();
+        if(!PacketHooker::isRegistered()){
+	        PacketHooker::register($this);
+        }
+
+	    PacketPool::init();
+        CommandMap::init($this);
 
         $notifier = new SleeperNotifier();
-        $this->thread = $thread = new SocketThread($host, $port, $secret, $name, $group, $address, $notifier);
-
-        $this->getServer()->getTickSleeper()->addNotifier($notifier, static function () use ($thread) {
-            while (($buffer = $thread->getBuffer()) !== null) {
+        $this->getServer()->getTickSleeper()->addNotifier($notifier, function () {
+        	$context = new PacketSerializerContext(GlobalItemTypeDictionary::getInstance()->getDictionary());
+            while (($buffer = $this->thread->getBuffer()) !== null) {
+            	$stream = PacketSerializer::decoder($buffer, 0, $context);
                 $packet = PacketPool::getPacket($buffer);
                 if ($packet instanceof Packet) {
-                    $packet->decode();
+                    $packet->decode($stream);
                     $packet->handlePacket();
                 }
             }
         });
+	    $this->thread = new SocketThread($host, $port, $secret, $name, $notifier);
     }
 
     public function onDisable(): void
@@ -98,26 +113,52 @@ class Portal extends PluginBase implements Listener
 
     public function onPlayerJoin(PlayerJoinEvent $event): void
     {
-        /** @var UUID $uuid */
-        $uuid = $event->getPlayer()->getUniqueId();
-        $this->playerLatencies[$uuid->toBinary()] = 0;
+        $this->playerLatencies[$event->getPlayer()->getUniqueId()->getBytes()] = 0;
     }
 
     public function onPlayerQuit(PlayerQuitEvent $event): void
     {
-        /** @var UUID $uuid */
-        $uuid = $event->getPlayer()->getUniqueId();
-        unset($this->playerLatencies[$uuid->toBinary()]);
+        unset($this->playerLatencies[$event->getPlayer()->getUniqueId()->getBytes()]);
     }
 
-    public function transferPlayer(Player $player, string $group, string $server, ?Closure $onResponse): void
+    public function transferPlayer(Player $player, string $server, ?Closure $onResponse): void
     {
-        if ($onResponse !== null) {
-            $this->transferring[$player->getRawUniqueId()] = $onResponse;
-        }
-        /** @var UUID $uuid */
-        $uuid = $player->getUniqueId();
-        $this->thread->addPacketToQueue(TransferRequestPacket::create($uuid, $group, $server));
+    	$this->transferPlayerByUUID($player->getUniqueId(), $server, $onResponse);
+    }
+
+	public function transferPlayerByUUID(UuidInterface $uuid, string $server, ?Closure $onResponse): void
+	{
+		if ($onResponse !== null) {
+			$this->transferring[$uuid->getBytes()] = $onResponse;
+		}
+		$this->thread->addPacketToQueue(TransferRequestPacket::create($uuid, $server));
+	}
+
+    /**
+     * @internal
+     */
+    public function handleAuthResponse(AuthResponsePacket $packet): void
+    {
+	    if ($packet->getStatus() !== AuthResponsePacket::RESPONSE_SUCCESS) {
+		    $reason = "";
+		    switch ($packet->getStatus()) {
+			    case AuthResponsePacket::RESPONSE_UNSUPPORTED_PROTOCOL:
+				    $reason = "Unsupported protocol version, expected " . $packet->getProtocol() . " got " . ProtocolInfo::PROTOCOL_VERSION;
+				    break;
+			    case AuthResponsePacket::RESPONSE_INCORRECT_SECRET:
+				    $reason = "Incorrect secret provided";
+				    break;
+			    case AuthResponsePacket::RESPONSE_ALREADY_CONNECTED:
+				    $reason = "Client already exists with the provided name";
+				    break;
+			    case AuthResponsePacket::RESPONSE_UNAUTHENTICATED:
+				    $reason = "Attempted to send packets whilst not authenticated";
+				    break;
+		    }
+		    throw new PortalAuthException($reason);
+	    }
+	    $this->getLogger()->info("Authenticated with socket server");
+		$this->thread->addPacketToQueue(RegisterServerPacket::create($this->address));
     }
 
     /**
@@ -125,25 +166,21 @@ class Portal extends PluginBase implements Listener
      */
     public function handleTransferResponse(TransferResponsePacket $packet): void
     {
-        $closure = $this->transferring[$packet->getPlayerUUID()->toBinary()] ?? null;
+        $closure = $this->transferring[$packet->getPlayerUUID()->getBytes()] ?? null;
         if ($closure !== null) {
-            unset($this->transferring[$packet->getPlayerUUID()->toBinary()]);
+            unset($this->transferring[$packet->getPlayerUUID()->getBytes()]);
             $player = $this->getServer()->getPlayerByUUID($packet->getPlayerUUID());
-            if ($player instanceof Player) {
-                $closure($player, $packet->status, $packet->error);
-            }
+            $closure($player, $packet->status, $packet->error);
         }
     }
 
     public function requestPlayerInfo(Player $player, ?Closure $onResponse): void
     {
         if ($onResponse !== null) {
-            $this->playerInfoRequests[$player->getRawUniqueId()] = $onResponse;
+            $this->playerInfoRequests[$player->getUniqueId()->getBytes()] = $onResponse;
         }
 
-        /** @var UUID $uuid */
-        $uuid = $player->getUniqueId();
-        $this->thread->addPacketToQueue(PlayerInfoRequestPacket::create($uuid));
+        $this->thread->addPacketToQueue(PlayerInfoRequestPacket::create($player->getUniqueId()));
     }
 
     /**
@@ -151,9 +188,9 @@ class Portal extends PluginBase implements Listener
      */
     public function handlePlayerInfoResponse(PlayerInfoResponsePacket $packet): void
     {
-        $closure = $this->playerInfoRequests[$packet->getPlayerUUID()->toBinary()] ?? null;
+        $closure = $this->playerInfoRequests[$packet->getPlayerUUID()->getBytes()] ?? null;
         if ($closure !== null) {
-            unset($this->playerInfoRequests[$packet->getPlayerUUID()->toBinary()]);
+            unset($this->playerInfoRequests[$packet->getPlayerUUID()->getBytes()]);
             $player = $this->getServer()->getPlayerByUUID($packet->getPlayerUUID());
             $closure($packet->getPlayerUUID(), $player, $packet->status, $packet->xuid, $packet->address);
         }
@@ -178,18 +215,18 @@ class Portal extends PluginBase implements Listener
     public function handleServerListResponse(ServerListResponsePacket $packet): void
     {
         foreach ($this->serverListRequests as $closure) {
-            $closure($packet->servers);
+            $closure($packet->getServers());
         }
         $this->serverListRequests = [];
     }
 
-    public function findPlayer(?UUID $uuid, string $name, ?Closure $onResponse): void
+    public function findPlayer(?UuidInterface $uuid, string $name, ?Closure $onResponse): void
     {
         if($onResponse !== null) {
-            $this->findPlayerRequests[$uuid === null ? $name : $uuid->toBinary()] = $onResponse;
+            $this->findPlayerRequests[$uuid === null ? strtolower($name) : $uuid->getBytes()] = $onResponse;
         }
 
-        $this->thread->addPacketToQueue(FindPlayerRequestPacket::create($uuid ?? new UUID(), $name));
+        $this->thread->addPacketToQueue(FindPlayerRequestPacket::create($uuid ?? Uuid::fromString(Uuid::NIL), $name));
     }
 
     /**
@@ -197,16 +234,18 @@ class Portal extends PluginBase implements Listener
      */
     public function handleFindPlayerResponse(FindPlayerResponsePacket $packet): void
     {
-        $closure = $this->findPlayerRequests[$packet->playerUUID->toBinary()] ?? $this->findPlayerRequests[$packet->name];
+        $closure = $this->findPlayerRequests[$packet->playerUUID->getBytes()] ?? $this->findPlayerRequests[strtolower($packet->playerName)];
         if($closure !== null) {
-            $closure($packet->playerUUID, $packet->name, $packet->online, $packet->group, $packet->server);
+        	$online = $packet->online;
+            $closure($packet->playerUUID, $packet->playerName, $online, $online ? $packet->server : "");
         }
     }
 
-    public function getPlayerLatency(Player $player): int{
+    public function getPlayerLatency(Player $player): int
+    {
         /** @var UUID $uuid */
         $uuid = $player->getUniqueId();
-        return $this->playerLatencies[$uuid->toBinary()] ?? -1;
+        return $this->playerLatencies[$uuid->getBytes()] ?? -1;
     }
 
     /**
@@ -214,7 +253,7 @@ class Portal extends PluginBase implements Listener
      */
     public function handleUpdatePlayerLatency(UpdatePlayerLatencyPacket $packet): void
     {
-        $uuid = $packet->playerUUID->toBinary();
+        $uuid = $packet->playerUUID->getBytes();
         if(isset($this->playerLatencies[$uuid])){
             $this->playerLatencies[$uuid] = $packet->latency;
         }

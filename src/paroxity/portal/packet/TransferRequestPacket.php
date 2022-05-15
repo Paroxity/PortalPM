@@ -3,33 +3,27 @@ declare(strict_types=1);
 
 namespace paroxity\portal\packet;
 
-use pocketmine\utils\UUID;
+use pocketmine\network\mcpe\protocol\serializer\PacketSerializer;
+use Ramsey\Uuid\UuidInterface;
 
 class TransferRequestPacket extends Packet
 {
     public const NETWORK_ID = ProtocolInfo::TRANSFER_REQUEST_PACKET;
 
-    public UUID $playerUUID;
-    public string $group;
+    public UuidInterface $playerUUID;
     public string $server;
 
-    public static function create(UUID $playerUUID, string $group, string $server): self
+    public static function create(UuidInterface $playerUUID, string $server): self
     {
         $result = new self;
         $result->playerUUID = $playerUUID;
-        $result->group = $group;
         $result->server = $server;
         return $result;
     }
 
-    public function getPlayerUUID(): UUID
+    public function getPlayerUUID(): UuidInterface
     {
         return $this->playerUUID;
-    }
-
-    public function getGroup(): string
-    {
-        return $this->group;
     }
 
     public function getServer(): string
@@ -37,18 +31,16 @@ class TransferRequestPacket extends Packet
         return $this->server;
     }
 
-    protected function decodePayload(): void
+    protected function decodePayload(PacketSerializer $in): void
     {
-        $this->playerUUID = $this->getUUID();
-        $this->group = $this->getString();
-        $this->server = $this->getString();
+        $this->playerUUID = $in->getUUID();
+        $this->server = $in->getString();
     }
 
-    protected function encodePayload(): void
+    protected function encodePayload(PacketSerializer $out): void
     {
-        $this->putUUID($this->playerUUID);
-        $this->putString($this->group);
-        $this->putString($this->server);
+        $out->putUUID($this->playerUUID);
+        $out->putString($this->server);
     }
 
     public function handlePacket(): void

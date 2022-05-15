@@ -1,6 +1,17 @@
 name: Portal
 main: paroxity\portal\Portal
-api: 3.0.0
+api: 4.0.0
 author: ParoxityTeam
 description: "Portal API implementation for PocketMine-MP"
-version: 1.0.0
+version: 1.0.1
+permissions:
+  portal.command.transfer:
+    default: op
+  portal.command.server:
+    default: op
+  portal.command.server.self:
+    default: true
+  portal.command.server.other:
+    default: op
+  portal.command.servers:
+    default: op

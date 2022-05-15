@@ -4,24 +4,24 @@ declare(strict_types=1);
 namespace paroxity\portal\packet;
 
 use paroxity\portal\Portal;
-use pocketmine\utils\UUID;
+use pocketmine\network\mcpe\protocol\serializer\PacketSerializer;
+use Ramsey\Uuid\UuidInterface;
 
 class TransferResponsePacket extends Packet
 {
     public const NETWORK_ID = ProtocolInfo::TRANSFER_RESPONSE_PACKET;
 
     public const RESPONSE_SUCCESS = 0;
-    public const RESPONSE_GROUP_NOT_FOUND = 1;
-    public const RESPONSE_SERVER_NOT_FOUND = 2;
-    public const RESPONSE_ALREADY_ON_SERVER = 3;
-    public const RESPONSE_PLAYER_NOT_FOUND = 4;
-    public const RESPONSE_ERROR = 5;
+    public const RESPONSE_SERVER_NOT_FOUND = 1;
+    public const RESPONSE_ALREADY_ON_SERVER = 2;
+    public const RESPONSE_PLAYER_NOT_FOUND = 3;
+    public const RESPONSE_ERROR = 4;
 
-    public UUID $playerUUID;
+    public UuidInterface $playerUUID;
     public int $status;
     public string $error = "";
 
-    public static function create(UUID $playerUUID, int $status, string $error = ""): self
+    public static function create(UuidInterface $playerUUID, int $status, string $error = ""): self
     {
         $result = new self;
         $result->playerUUID = $playerUUID;
@@ -31,7 +31,7 @@ class TransferResponsePacket extends Packet
         return $result;
     }
 
-    public function getPlayerUUID(): UUID
+    public function getPlayerUUID(): UuidInterface
     {
         return $this->playerUUID;
     }
@@ -46,21 +46,21 @@ class TransferResponsePacket extends Packet
         return $this->error;
     }
 
-    protected function decodePayload(): void
+    protected function decodePayload(PacketSerializer $in): void
     {
-        $this->playerUUID = $this->getUUID();
-        $this->status = $this->getByte();
+        $this->playerUUID = $in->getUUID();
+        $this->status = $in->getByte();
         if($this->status === self::RESPONSE_ERROR){
-            $this->error = $this->getString();
+            $this->error = $in->getString();
         }
     }
 
-    protected function encodePayload(): void
+    protected function encodePayload(PacketSerializer $out): void
     {
-        $this->putUUID($this->playerUUID);
-        $this->putByte($this->status);
+        $out->putUUID($this->playerUUID);
+        $out->putByte($this->status);
         if($this->status === self::RESPONSE_ERROR){
-            $this->putString($this->error);
+            $out->putString($this->error);
         }
     }
 

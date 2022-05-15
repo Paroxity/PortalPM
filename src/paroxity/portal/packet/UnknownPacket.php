@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace paroxity\portal\packet;
 
+use pocketmine\network\mcpe\protocol\serializer\PacketSerializer;
+
 class UnknownPacket extends Packet
 {
     public const NETWORK_ID = -1; //Invalid, do not try to write this
@@ -10,7 +12,7 @@ class UnknownPacket extends Packet
     public string $payload;
 
     public function pid(): int{
-        if(strlen($this->payload ?? "") > 0){
+        if(($this->payload ?? "") !== ""){
             return ord($this->payload[0]);
         }
         return self::NETWORK_ID;
@@ -20,17 +22,17 @@ class UnknownPacket extends Packet
         return "unknown packet";
     }
 
-    public function decode(): void{
-        $this->payload = $this->getRemaining();
+    public function decode(PacketSerializer $in): void{
+    	$this->payload = $in->getRemaining();
     }
 
-    public function encode(): void{
+    public function encode(PacketSerializer $out): void{
         //Do not reset the buffer, this class does not have a valid NETWORK_ID constant.
-        $this->put($this->payload);
+	    $out->put($this->payload);
     }
 
     public function handlePacket(): void
     {
-
+    	// NOOP
     }
 }

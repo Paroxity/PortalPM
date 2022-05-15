@@ -6,15 +6,11 @@ namespace paroxity\portal\packet\types;
 class ServerListEntry
 {
     private string $name;
-    private string $group;
-    private bool $online;
     private int $playerCount;
 
-    public static function create(string $name, string $group, bool $online, int $playerCount): self {
+    public static function create(string $name,  int $playerCount): self {
         $result = new self;
         $result->name = $name;
-        $result->group = $group;
-        $result->online = $online;
         $result->playerCount = $playerCount;
         return $result;
     }
@@ -22,16 +18,6 @@ class ServerListEntry
     public function getName(): string
     {
         return $this->name;
-    }
-
-    public function getGroup(): string
-    {
-        return $this->group;
-    }
-
-    public function isOnline(): bool
-    {
-        return $this->online;
     }
 
     public function getPlayerCount(): int
