@@ -130,7 +130,7 @@ class SocketThread extends Thread
             if (!$connected) {
                 sleep(5);
             }
-        } while (!$connected);
+        } while (!$connected && $this->isRunning);
         socket_set_nonblock($socket);
 
         $pk = AuthRequestPacket::create(ProtocolInfo::PROTOCOL_VERSION, $this->secret, $this->name);
